@@ -90,8 +90,8 @@ echo "${genenames[@]}" | sed 's/ /\n/g' | parallel -j$(echo "${threads}/${raxthr
                                                    --model MtArt '&&' mv RAxML_{}.* ./raxml/
 
 #concatenate RAxML trees
-cat RAxML_EOG091500OC.raxml.startTree | sed -E 's/([[A-Z0-9_]+)\|[A-Z0-9]+\:/\1\:/g' \
-					    > busco_gene_trees_ml.tree
+cat ./raxml/*.bestTree | sed -E 's/([[A-Z0-9_]+)\|[A-Z0-9]+\:/\1\:/g' \
+			     > busco_gene_trees_ml.tree
 
 #run astral on best trees
 java -jar ~/bin/astral.5.6.3.jar \
