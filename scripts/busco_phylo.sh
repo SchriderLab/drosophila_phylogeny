@@ -10,7 +10,7 @@ threads="75"
 
 #Path to folder with all the *busco.tar.gz files
 busco_path="/media/bernardkim/active-data/buscos/"
-species_num=$(echo "$(ls -lah ${busco_path} | wc -l)-3" | bc)
+species_num=$(ls -lah ${busco_path}*.busco.tar.gz | wc -l)
 
 #Set the maximum number of taxa BUSCOs can be dup/missing/fragmented in
 missing_no="0"
