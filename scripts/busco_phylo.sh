@@ -39,12 +39,13 @@ for dir in $(find . -type d -name "single_copy_busco_sequences"); do
   #to do: extract DNA sequence
   while read id; do
       file=${dir}/${id}.faa
-      genename=(${file///// })
-      genename=${genename[-1]}
-
-      #clean up fasta headers
-      cat $file | sed -E 's/>([^:]+):(.+)\.assembly.+/>\2|\1/' | sed 's/\.//' | \
-	  sed 's/\./_/g' | sed 's/-//g' | tr '[:lower:]' '[:upper:]' > ./busco_aa/${sppname}_${genename}
+      if [ -f $file ]; then
+	  genename=(${file///// })
+	  genename=${genename[-1]}
+	  #clean up fasta headers
+	  cat $file | sed -E 's/>([^:]+):(.+)\.assembly.+/>\2|\1/' | sed 's/\.//' | \
+	      sed 's/\./_/g' | sed 's/-//g' | tr '[:lower:]' '[:upper:]' > ./busco_aa/${sppname}_${genename}
+      fi
   done < final_busco_ids.txt
 done
 
