@@ -1,4 +1,4 @@
-# drosophila_phylogeny
+# Drosophila Phylogeny Pipeline 
 
 **BUSCO processing**
 1) Separate single copy BUSCOs from non single copy BUSCOs    
