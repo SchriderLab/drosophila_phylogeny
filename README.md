@@ -14,3 +14,6 @@ busco_copy_rename.sh
 busco_aggregate.sh
 ```
 **Generation of MSAs using [MAFFT](https://mafft.cbrc.jp/alignment/software/) v7.427**
+```bash
+mafft --localpair --maxiterate 1000 [in_fasta]
+```
