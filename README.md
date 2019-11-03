@@ -13,4 +13,4 @@ busco_copy_rename.sh
 ```bash
 busco_aggregate.sh
 ```
-**Generation of MSAs using [MAFFT](https://mafft.cbrc.jp/alignment/software/)**
+**Generation of MSAs using [MAFFT](https://mafft.cbrc.jp/alignment/software/) v7.427**
