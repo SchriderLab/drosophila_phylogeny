@@ -13,7 +13,7 @@ busco_copy_rename.sh
 ```bash
 busco_aggregate.sh
 ```
-**Generation of MSAs using [MAFFT](https://mafft.cbrc.jp/alignment/software/) v7.427**
+**Generation of MSAs using [MAFFT](https://mafft.cbrc.jp/alignment/software/) v7.427 L-INS-i strategy (most accurate)**
 ```bash
 mafft --localpair --maxiterate 1000 [in_fasta]
 ```
