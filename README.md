@@ -17,20 +17,20 @@ busco_aggregate.sh
 
 #SBATCH --time=05:00:00 --ntasks=1 --nodes=1 --mem-per-cpu=3G
 ```bash
-mafft --localpair --maxiterate 1000 [in_fasta]
+mafft --localpair --maxiterate 1000 [in_fasta] > out_fasta.aln
 ```
 Note: 
 1) for large MSAs minimal SLUM requirements 
 
 #SBATCH --time=100:00:00 --ntasks=15 --nodes=1 --mem-per-cpu=5G
 ```bash
-mafft --localpair --maxiterate 1000 --thread 15 [in_fasta]
+mafft --localpair --maxiterate 1000 --thread 15 [in_fasta] > out_fasta.aln
 ```
 2) for ultra-large MSAs minimal SLUM requirements (-- auto option will most likely choose the [E-INS-i](https://mafft.cbrc.jp/alignment/software/manual/manual.html) model)
 
 #SBATCH --time=100:00:00 --ntasks=30 --nodes=1 --mem-per-cpu=10G
 ```bash
-mafft --auto --thread 30 [in_fasta]
+mafft --auto --thread 30 [in_fasta] > out_fasta.aln
 ```
 :red_circle: **Concatenation of BUSCO MSAs into a Supermatrix using geneSticher.py from [Utensils](https://github.com/ballesterus/Utensils)**  
 ```bash
