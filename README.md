@@ -1,6 +1,6 @@
 # Drosophila Phylogeny Pipeline 
 
-**BUSCO processing**
+:red_circle: **BUSCO processing**
 1) Separate single copy BUSCOs from non single copy BUSCOs    
 ```bash
 busco_non_single_copy.sh
