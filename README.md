@@ -25,6 +25,7 @@ Note:
 mafft --localpair --maxiterate 1000 --thread 15 [in_fasta]
 ```
 2) for ultra-large MSAs minimal SLUM requirements
+
 #SBATCH --time=100:00:00 --ntasks=30 --nodes=1 --mem-per-cpu=10G
 ```bash
 mafft --auto --thread 30 [in_fasta]
