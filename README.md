@@ -26,7 +26,7 @@ Note:
 ```bash
 mafft --localpair --maxiterate 1000 --thread 15 [in_fasta]
 ```
-2) for ultra-large MSAs minimal SLUM requirements
+2) for ultra-large MSAs minimal SLUM requirements (-- auto option will most likely choose the [E-INS-i](https://mafft.cbrc.jp/alignment/software/manual/manual.html) model)
 
 #SBATCH --time=100:00:00 --ntasks=30 --nodes=1 --mem-per-cpu=10G
 ```bash
