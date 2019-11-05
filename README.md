@@ -36,3 +36,11 @@ mafft --auto --thread 30 [in_fasta] > out_fasta.aln
 ```bash
 python2.7 geneSticher.py -in *.aln
 ```
+
+:red_circle: **Trimming Supermatrix by removing sites that have only one non-gap character using [trimAl](http://trimal.cgenomics.org/introduction)**
+```bash
+trimal -in SuperMatrix.al -out SuperMatrix.trim.al -gt 0.0164
+```
+
+
+
