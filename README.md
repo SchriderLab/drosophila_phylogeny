@@ -42,6 +42,7 @@ python2.7 geneSticher.py -in *.aln
 trimal -in SuperMatrix.al -out SuperMatrix.trim.al -gt 0.0164
 ```
 :red_circle: **ML phylogenetic inference using [IQTREE](http://www.iqtree.org/) v1.6.5**
+
 #SBATCH --time=100:00:00 --ntasks=15 --nodes=1 --mem-per-cpu=10G
 ```bash
 iqtree -s SuperMatrix.trim.al -nt 15 -m GTR+I+G -bb 1000 -pre ML -safe -bb 1000 -alrt 1000 -abayes
