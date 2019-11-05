@@ -13,7 +13,7 @@ busco_copy_rename.sh
 ```bash
 busco_aggregate.sh
 ```
-**Generation of MSAs using [MAFFT](https://mafft.cbrc.jp/alignment/software/) v7.427 L-INS-i strategy (most accurate) with minimal SLURM requirements**
+:red_circle: **Generation of MSAs using [MAFFT](https://mafft.cbrc.jp/alignment/software/) v7.427 L-INS-i strategy (most accurate) with minimal SLURM requirements**
 
 #SBATCH --time=05:00:00 --ntasks=1 --nodes=1 --mem-per-cpu=3G
 ```bash
