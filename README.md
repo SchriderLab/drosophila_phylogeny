@@ -32,3 +32,7 @@ mafft --localpair --maxiterate 1000 --thread 15 [in_fasta]
 ```bash
 mafft --auto --thread 30 [in_fasta]
 ```
+:red_circle: **Concatenation of BUSCO MSAs into a Supermatrix using geneSticher.py from [Utensils](https://github.com/ballesterus/Utensils)**  
+```bash
+python2.7 geneSticher.py -in *.aln
+```
