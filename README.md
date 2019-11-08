@@ -13,7 +13,7 @@ busco_copy_rename.sh
 ```bash
 busco_aggregate.sh
 ```
-:red_circle: **Generation of MSAs using [MAFFT](https://mafft.cbrc.jp/alignment/software/) v7.427 L-INS-i strategy (most accurate) with minimal SLURM requirements**
+:red_circle: **Generation of DNA MSAs using [MAFFT](https://mafft.cbrc.jp/alignment/software/) v7.427 L-INS-i strategy (most accurate) with minimal SLURM requirements**
 
 #SBATCH --time=05:00:00 --ntasks=1 --nodes=1 --mem-per-cpu=3G
 ```bash
@@ -47,3 +47,17 @@ trimal -in SuperMatrix.al -out SuperMatrix.trim.al -gt 0.0164
 ```bash
 iqtree -s SuperMatrix.trim.al -nt 15 -m GTR+I+G -bb 1000 -pre ML -safe -bb 1000 -alrt 1000 -abayes
 ```
+:red_circle: **Generation of CODON MSAs using [PRANK](http://wasabiapp.org/software/prank/) v.170427 with minimal SLURM requirements**
+
+Ectract CDS from BUSCO that correspond to BUSCO Protein
+
+
+
+```bash
+prank -codon -d=EOG09150ICV.fna -o=ZZ.outp
+```
+
+
+
+
+
