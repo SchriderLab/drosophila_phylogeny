@@ -51,7 +51,7 @@ iqtree -s SuperMatrix.trim.al -nt 15 -m GTR+I+G -bb 1000 -pre ML -safe -bb 1000 
 
 1) Ectract CDS from BUSCO-extracted DNA sequences in fasta that correspond to BUSCO-translated Protein sequences
 ```bash
-fasta2numeric.py
+fasta2numeric.py -p [in_fasta] 
 ```
 2) Align 
 ```bash
