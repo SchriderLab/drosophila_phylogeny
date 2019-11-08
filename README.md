@@ -49,7 +49,7 @@ iqtree -s SuperMatrix.trim.al -nt 15 -m GTR+I+G -bb 1000 -pre ML -safe -bb 1000 
 ```
 :red_circle: **Generation of CODON MSAs using [PRANK](http://wasabiapp.org/software/prank/) v.170427 with minimal SLURM requirements**
 
-1) Ectract CDS from BUSCO-extracted DNA sequences in fasta that correspond to BUSCO-translated Protein sequences with [fasta2numeric.py](https://github.com/SchriderLab/drosophila_phylogeny/blob/master/scripts/dna2cds_busco.py)
+1) Ectract CDS from BUSCO-extracted DNA sequences in fasta that correspond to BUSCO-translated Protein sequences with [dna2cds_busco.py](https://github.com/SchriderLab/drosophila_phylogeny/blob/master/scripts/dna2cds_busco.py)
 ```bash
 fasta2numeric.py -p [in_fasta] 
 ```
