@@ -8,8 +8,14 @@ def get_cds(file):
    records=SeqIO.to_dict(SeqIO.parse(file, "fasta"))
    for r in records.items():
        # r is tuple of seq name [0] and seq [1]
-       cds_l=len(r[1].translate(to_stop=True))*3
-       records[r[0]]=r[1][:cds_l]
+       #Check all reading frames
+       cds_l0=len(r[1].translate(to_stop=True))*3
+       cds_l1=len(r[1][1:].translate(to_stop=True))*3
+       cds_l2=len(r[1][2:].translate(to_stop=True))*3
+       lengths=[cds_l0,cds_l1,cds_l2] 
+       first_index=lengths.index(max(lengths))
+       last_index=max(lengths)  
+       records[r[0]]=r[1][first_index:last_index]
    SeqIO.write(records.values(),file+".cds", "fasta")
 
 def main():
