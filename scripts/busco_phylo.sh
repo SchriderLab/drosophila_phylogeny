@@ -85,11 +85,9 @@ for file in ./busco_aa_aln/*.fasta; do
 done
 
 raxthreads="8" #number of threads per process
-echo "${genenames[@]}" | sed 's/ /\n/g' | parallel -j$(echo "${threads}/${raxthreads}" | bc) raxml-ng --force \
-						   --threads ${raxthreads} --all --bs-trees 100 --seed 12345 \
-						   -msa ./busco_aa_aln/{}_aa.aln.fasta --msa-format FASTA \
-						   --data-type AA --prefix RAxML_{} \
-                                                   --model MtArt '&&' mv RAxML_{}.* ./raxml/
+parallel -j$(echo "${threads}/${raxthreads}" | bc) raxml-ng --force --threads ${raxthreads} --all \
+    --bs-trees 100 --seed 12345 -msa ./busco_aa_aln/{}_aa.aln.fasta --msa-format FASTA --data-type AA \
+    --prefix RAxML_{} --model MtArt '&&' mv RAxML_{}.* ./raxml/ ::: "${genenames[@]}"
 
 #concatenate RAxML trees
 cat ./raxml/*.bestTree | sed -E 's/([[A-Z0-9_]+)\|[A-Z0-9]+\:/\1\:/g' \
