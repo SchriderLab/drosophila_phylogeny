@@ -19,7 +19,7 @@ missing_no="0"
 parallel -j${threads} 'pigz -dc -p 1 {} | tar xf -' ::: $(ls -lah ${busco_path}* | awk '{print $NF}' | tr '\n' ' ')
 
 #extract names of complete BUSCO genes
-rm complete_buscos.txt || true
+rm complete_buscos.txt
 for file in $(find . -name "full_table_*.tsv"); do
     grep -v "^#" ${file} | awk '$2=="Complete" {print $1}' >> complete_buscos.txt;
 done
@@ -58,8 +58,9 @@ find . -wholename './busco_aa/*.faa' | xargs rm -f #regular rm doesn't work for 
 #align amino acids with MAFFT
 mkdir -p ./busco_aa_aln
 alnthreads="6" #num threads per process
-ls ./busco_aa/*.fasta | parallel -j$(echo "${threads}/${alnthreads}" | bc) mafft --thread ${alnthreads} \
-				 --genafpair --maxiterate 10000 {} '>' ./busco_aa_aln/{/.}.aln.fasta
+parallel -j$(echo "${threads}/${alnthreads}" | bc) \
+    mafft --thread ${alnthreads} --genafpair --maxiterate 10000 {} '>' \
+    ./busco_aa_aln/{/.}.aln.fasta ::: $(ls -lah ./busco_aa/*.fasta | awk '{print $NF}' | tr '\n' ' ')
 
 #Old RAxML, ignore
 #mkdir raxml
