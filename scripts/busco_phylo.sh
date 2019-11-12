@@ -13,7 +13,7 @@ busco_path="/media/bernardkim/active-data/buscos/"
 species_num=$(ls -lah ${busco_path}*.busco.tar.gz | wc -l)
 
 #Set the maximum number of taxa BUSCOs can be dup/missing/fragmented in
-missing_no="0"
+missing_no="4"
 
 #copy all busco folders to wd and unzip
 parallel -j${threads} 'pigz -dc -p 1 {} | tar xf -' ::: $(ls -lah ${busco_path}* | awk '{print $NF}' | tr '\n' ' ')
