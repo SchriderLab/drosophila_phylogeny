@@ -15,8 +15,8 @@ busco_path="/media/bernardkim/active-data/buscos/"
 parallel -j${threads} 'pigz -dc -p 1 {} | tar xf -' ::: $(ls -lah ${busco_path}* | awk '{print $NF}' | tr '\n' ' ')
 
 #Set the maximum number of taxa BUSCOs can be dup/missing/fragmented in
-species_num=$(ls -lah ./*.busco.tar.gz | wc -l)
-missing_no="4"
+species_num=$(ls -l *.busco/ | grep / | wc -l)
+missing_no="1"
 
 #extract names of complete BUSCO genes
 rm complete_buscos.txt
