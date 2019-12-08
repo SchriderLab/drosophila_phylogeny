@@ -32,7 +32,7 @@ mafft --localpair --maxiterate 1000 --thread 15 [in_fasta] > out_fasta.aln
 ```bash
 mafft --auto --thread 30 [in_fasta] > out_fasta.aln
 ```
-:red_circle: **Trimming locus MSAs by removing sites that have less than 3 non-gap characters using fasta_site_trim.py**
+:red_circle: **Trimming locus MSAs by removing sites that have less than 3 non-gap characters using [fasta_site_trim.py](https://github.com/SchriderLab/drosophila_phylogeny/blob/master/scripts/fasta_site_trim.py)**
 ```bash
 fasta_site_trim.py --Nbase 3 --input [in_fasta]
 ```
