@@ -36,6 +36,10 @@ mafft --auto --thread 30 [in_fasta] > out_fasta.aln
 ```bash
 fasta_site_trim.py --Nbase 3 --input [in_fasta]
 ```
+:red_circle: **Gene (locus) tree inference using [IQTREE](http://www.iqtree.org/) v1.6.5**
+```bash
+iqtree -s [in_fasta.trimmed] -bb 1000 -nt 2 -m GTR+I+G -blmin 1e-300 -safe
+```
 
 
 :red_circle: **Concatenation of BUSCO MSAs into a Supermatrix using geneSticher.py from [Utensils](https://github.com/ballesterus/Utensils)**  
