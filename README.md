@@ -32,15 +32,21 @@ mafft --localpair --maxiterate 1000 --thread 15 [in_fasta] > out_fasta.aln
 ```bash
 mafft --auto --thread 30 [in_fasta] > out_fasta.aln
 ```
+:red_circle: **Trimming locus MSAs by removing sites that have less than 3 non-gap characters using [fasta_site_trim.py](https://github.com/SchriderLab/drosophila_phylogeny/blob/master/scripts/fasta_site_trim.py)**
+```bash
+fasta_site_trim.py --Nbase 3 --input [in_fasta]
+```
+:red_circle: **Gene (locus) tree inference using [IQTREE](http://www.iqtree.org/) v1.6.5**
+```bash
+iqtree -s [in_fasta.trimmed] -bb 1000 -nt 2 -m GTR+I+G -blmin 1e-300 -safe
+```
+
+
 :red_circle: **Concatenation of BUSCO MSAs into a Supermatrix using geneSticher.py from [Utensils](https://github.com/ballesterus/Utensils)**  
 ```bash
 python2.7 geneSticher.py -in *.aln
 ```
 
-:red_circle: **Trimming Supermatrix by removing sites that have only one non-gap character using [trimAl](http://trimal.cgenomics.org/introduction)**
-```bash
-trimal -in SuperMatrix.al -out SuperMatrix.trim.al -gt 0.0164
-```
 :red_circle: **ML phylogenetic inference using [IQTREE](http://www.iqtree.org/) v1.6.5**
 
 #SBATCH --time=100:00:00 --ntasks=15 --nodes=1 --mem-per-cpu=10G
