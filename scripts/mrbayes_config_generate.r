@@ -44,7 +44,7 @@ mrbayesnexus_gen=function(fasta,tree,outgroup,nsim,filename="mrbayes.out")
      \tprset extinctionpr = fixed(0.4);
      \tprset sampleprob = 1;
      \tprset nodeagepr = calibrated;"
-     
+
     mcmc_params=paste(
     "\tmcmc ngen=",nsim*10000," samplefreq=10000 printfreq=10000 nruns=1 nchains=1 data=no savetrees=yes;\n\tsumt burninfrac=0.5 output=",filename,"savebrparams=yes;")
     
