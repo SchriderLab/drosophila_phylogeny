@@ -1,17 +1,40 @@
 ﻿Position,Lineage,Fossil,Age (Ma),Bound,Prior,Reference
-Crown,Whole tree (Diptera),Grauvogelia,247.2-242.0,Lower,"U(189.9,247)",Grimaldi & Engel (2005)
-Crown,Whole tree (Brachycera),Oligophryne,196.5-189.6 ,Upper,,Grimaldi & Engel (2005)
-Crown,Drosophilidae,multiple (Baltic Amber),42,Lower (Schizophora),"U(13,42)",von Tschirnhaus & Hoffeins (2009)
-Crown,Drosophilidae,Scaptomyza dominicana,20.43-13.65,Upper,,Grimaldi (1987)
-Crown,Scaptomyza,Scaptomyza dominicana,20.43-13.65,Upper,"SN(15,10,5)",Grimaldi (1987)
-Stem,Scaptomyza,Scaptomyza dominicana,20.43-13.65,Upper,"SN(15,10,5)",Grimaldi (1987)
-Crown,S.flava+S.montana,Scaptomyza dominicana,20.43-13.65,Upper,"SN(15,10,5)",Grimaldi (1987)
-Crown,S.elmoi+S.pallida,Scaptomyza dominicana,20.43-13.65,Upper,"SN(15,10,5)",Grimaldi (1987)
-,,,,,,
+Sheme A,,,,,,
+Crown,Whole tree ,Grauvogelia,230,Upper (Diptera),"U(195,230)",Grimaldi & Engel (2005)
+,,Oligophryne,195,Lower (Brachycera),,Grimaldi & Engel (2005)
+Crown,Drosophilidae,Phytomyzites,64,Upper  (Schizophora),"U(43,64)",Winkler et al. (2010)
+,,Electrophortica succini,43,Lower(Drosophilidae),,von Tschirnhaus & Hoffeins (2009)
+Crown,Scaptomyza,Electrophortica succini,43,Upper,"U(15,43)",von Tschirnhaus & Hoffeins (2009)
+,,Scaptomyza dominicana,15,Lower,,Grimaldi (1987
+Sheme B,,,,,,
+Crown,Whole tree ,Grauvogelia,230,Upper (Diptera),"U(195,230)",Grimaldi & Engel (2005)
+,,Oligophryne,195,Lower (Brachycera),,Grimaldi & Engel (2005)
+Crown,Drosophilidae,Phytomyzites,64,Upper  (Schizophora),"U(43,64)",Winkler et al. (2010)
+,,Electrophortica succini,43,Lower(Drosophilidae),,von Tschirnhaus & Hoffeins (2009)
+Stem,Scaptomyza,Electrophortica succini,43,Upper,"U(15,43)",von Tschirnhaus & Hoffeins (2009)
+,,Scaptomyza dominicana,15,Lower,,Grimaldi (1987
+Sheme C,,,,,,
+Crown,Whole tree ,Grauvogelia,230,Upper (Diptera),"U(195,230)",Grimaldi & Engel (2005)
+,,Oligophryne,195,Lower (Brachycera),,Grimaldi & Engel (2005)
+Crown,Drosophilidae,Phytomyzites,64,Upper  (Schizophora),"U(43,64)",Winkler et al. (2010)
+,,Electrophortica succini,43,Lower(Drosophilidae),,von Tschirnhaus & Hoffeins (2009)
+Crown,S.flava+S.montana,Electrophortica succini,43,Upper,"U(15,43)",von Tschirnhaus & Hoffeins (2009)
+,,Scaptomyza dominicana,15,Lower,,Grimaldi (1987
+Sheme D,,,,,,
+Crown,Whole tree ,Grauvogelia,230,Upper (Diptera),"U(195,230)",Grimaldi & Engel (2005)
+,,Oligophryne,195,Lower (Brachycera),,Grimaldi & Engel (2005)
+Crown,Drosophilidae,Phytomyzites,64,Upper  (Schizophora),"U(43,64)",Winkler et al. (2010)
+,,Electrophortica succini,43,Lower(Drosophilidae),,von Tschirnhaus & Hoffeins (2009)
+Crown,S.elmoi+S.pallida,Electrophortica succini,43,Upper,"U(15,43)",von Tschirnhaus & Hoffeins (2009)
+,,Scaptomyza dominicana,15,Lower,,Grimaldi (1987
 adaptation from Russo et.al. (2013) ,,,,,,
-Crown,Whole tree (Diptera),Grauvogelia,247.2-242.0,Lower,"U(189.9,247)",Grimaldi & Engel (2005)
-Crown,Whole tree (Brachycera),Oligophryne,196.5-189.6 ,Upper,,Grimaldi & Engel (2005)
+Crown,Whole tree ,Grauvogelia,230,Lower (Diptera),"U(195,230)",Grimaldi & Engel (2005)
+Crown,Whole tree ,Oligophryne,195,Upper (Brachycera),,Grimaldi & Engel (2005)
 Crown,Chymomyza costata+Scaptodrosophila lebanonensis,Chymomyza primaeva,20.43-13.65,,"SN(25.7,3,0) equivalent to N(25.7,3 )",
 Crown,Scaptomyza,Scaptomyza dominicana,20.43-13.65,,"SN(25.7,3,0) equivalent to N(25.7,3 )",Grimaldi (1987)
 Crown,D.silvestris+D. heteroneura+D.differens +D.planitibia,Geological (Molokai formation),2,,"SN(2,0.1,0) equivalent to N(2,0.1)",
 Crown,D.silvestris+D. heteroneura,Geological (Hawaii formation),0.6,,"SN(0.6,0.04,0) equivalent to N(0.6,0.04)",
+,,,,,,
+,,,,,,
+U = uniform with soft bounds ,,,,,,
+SN = skewed normal,,,,,,
