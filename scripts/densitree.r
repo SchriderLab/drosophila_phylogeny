@@ -26,7 +26,7 @@ genefordensitree=function(alltree,filename)
              
             } 
             tr$node.label=NULL
-            tr$edge.length=NULL
+            #tr$edge.length=NULL
             all_trees=c(all_trees,write.tree(tr))        
         }
        
