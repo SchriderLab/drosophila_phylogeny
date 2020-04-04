@@ -1,13 +1,5 @@
 library("ape")
-library("phytools")
 
-
-
-extract.clade(tt, 245)
- combn(zz$tip.label,m=5)
-
-tt=read.tree("MLrooted.tre")
-cl1=extract.clade(tt, 245)
 
 dfoil_select=function(phy)
 {
@@ -36,3 +28,9 @@ dfoil_select=function(phy)
     }
     write(dfoil_out,"dfoil_clades")
 }    
+
+
+
+tt=read.tree("MLrooted.tre")
+nodelabels()
+cl1=extract.clade(tt, 245)
