@@ -34,3 +34,5 @@ dfoil_select=function(phy)
 tt=read.tree("MLrooted.tre")
 nodelabels()
 cl1=extract.clade(tt, 245)
+
+cl2=extract.clade(tt,88)
