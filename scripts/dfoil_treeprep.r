@@ -1,7 +1,7 @@
 library("ape")
 
 
-dfoil_select=function(phy)
+dfoil_select=function(phy,id)
 {
     dfoil_out=c()
     taxa_combn=combn(phy$tip.label,m=5)
@@ -26,13 +26,38 @@ dfoil_select=function(phy)
         }    
         
     }
-    write(dfoil_out,"dfoil_clades")
+    write(dfoil_out,id)
+}    
+
+
+dfoil_select_all=function(phy,id)
+{
+    dfoil_out=c()
+    taxa_combn=combn(phy$tip.label,m=5)
+    taxa_combn=data.frame(t(taxa_combn))
+    write(apply(taxa_combn,1,paste,collapse=","),id)
 }    
 
 
 
 tt=read.tree("MLrooted.tre")
 nodelabels()
-cl1=extract.clade(tt, 245)
+node_n=c(168,185,204,226,245,256,265,289,307)
 
-cl2=extract.clade(tt,88)
+
+
+cl_id=1
+for (i in node_n)
+{
+   dfoil_select(extract.clade(tt,i),paste("C",cl_id,"_node",i,"_dfoil",sep=""))
+   cl_id=cl_id+1 
+}    
+
+
+#All clades 
+cl_id=1
+for (i in node_n)
+{
+   dfoil_select_all(extract.clade(tt,i),paste("C",cl_id,"_node",i,"_dfoil_all",sep=""))
+   cl_id=cl_id+1 
+}    
