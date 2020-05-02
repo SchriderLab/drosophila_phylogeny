@@ -78,6 +78,18 @@ total$introgressionid=ifelse(total$introgression=="none","None",
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 total_order=melt(total[,c("introgressionid","Genus")])
 g1=ggplot(total_order, aes(x=Genus, y=..count../sum(..count..),fill=introgressionid))+geom_bar(position="fill")+labs(x="Genus", y = "")+scale_fill_manual(values=c("#f0ad4e", "#5cb85c","#337ab7"),name="Introgression")
 total_suborder=melt(total[,c("introgressionid","clade")])
