@@ -158,14 +158,14 @@ get_intomatrix_dfoil=function(taxa,dat)
     return(g1)
 }    
 
-#Identify introgressing taxa pair from BLT result
-get_intropair_blt=function(m)
+#Identify introgressing taxa pair from BLT result 
+get_intropair_blt_wilcox=function(m)
 {
     pair_v=rbind()
     for (i in 1:nrow(m))
     {
         progress(i,nrow(m))
-        if(m[i,"Pvalue"]<0.05)
+        if(m[i,"PvalueWC1C2"]<0.05)
         {
             pair=as.character(m[i,c("P1out","P2out","P3out")][as.character(m[i,c("P1out","P2out","P3out")])!=as.character(m[i,c("P1out","P2out","P3out")][1:3!=which.max(m[i,c("CountP1","CountP2","CountP3")])][which.min(m[i,c("meanT_discord1","meanT_discord2")])])])
             pair_v=rbind(pair_v,pair)
@@ -179,6 +179,36 @@ get_intropair_blt=function(m)
     rownames(pair_v) = c()
     return(pair_v)
 }
+
+
+get_intropair_blt_chisq=function(m)
+{
+    pair_v=rbind()
+    for (i in 1:nrow(m))
+    {
+        progress(i,nrow(m))
+        if(m[i,"PvalueChi"]<0.05)
+        {
+            pair=as.character(m[i,c("P1out","P2out","P3out")][which(rank(m[i,c("CountP1","CountP2","CountP3")])!=2)])
+            pair_v=rbind(pair_v,pair)
+        }else{
+            pair=c("none","none")
+            pair_v=rbind(pair_v,pair)
+        }    
+    }
+    pair_v=data.frame(pair_v)
+    names(pair_v)=c("i1","i2")
+    rownames(pair_v) = c()
+    return(pair_v)
+}
+
+
+
+
+
+
+
+
 
 # Plot matrix from BLT results 
 get_intomatrix_blt=function(taxa,dat)
@@ -286,7 +316,7 @@ total_q=total_q[complete.cases(total_q), ]
 total_q$BICdiff = total_q$BIC2-total_q$BIC1
 total_q$Qsig = total_q$Q<0.05
 total_q$Qtrisig = total_q$Qtri<0.05
-total_q$sig=total_q$BICdiff < -10    
+total_q$sig=total_q$BICdiff < -30    
 
 
 
@@ -325,7 +355,7 @@ grid.arrange(g1,gq1,g2,gq2,nrow=2,ncol=2)
 
 names_v=c("clade","P1","P2","P3","P4","Out","chrom1","position", "AAAAA" , "AAABA" , "AABAA" , "AABBA" , "ABAAA" , "ABABA" , "ABBAA" , "ABBBA" , "BAAAA" , "BAABA" , "BABAA" , "BABBA" , "BBAAA" ,"BBABA","BBBAA","BBBBA",'chromdup','coord','total','dtotal','T12','T34','T1234','DFO_left','DFO_right','DFO_total','DFO_stat','DFO_chisq','DFO_Pvalue','DIL_left','DIL_right','DIL_total','DIL_stat','DIL_chisq','DIL_Pvalue','DFI_left','DFI_right','DFI_total','DFI_stat','DFI_chisq','DFI_Pvalue','DOL_left','DOL_right','DOL_total','DOL_stat','DOL_chisq','DOL_Pvalue','introgression','introgna','intrognone','introg13','introg14','introg23','introg24','introg31','introg41','introg32','introg42','introg123','introg124')
 
-total_d=read.csv("/Users/Anton/Downloads/droso_dfoil_results.txt",stringsAsFactors=FALSE)
+total_d=read.csv("/Users/Anton/Downloads/droso_dfoil_results.txt",stringsAsFactors=FALSE,header=F)
 names(total_d)=names_v
 total_d=total_d[total_d$T12<total_d$T34,]
 
@@ -340,20 +370,16 @@ total_d=cbind(total_d,get_intropair_dfoil(total_d))
 #################################################################### Branch Length Test ################################################
 
 names_vb=c("clade","P1out","P2out","P3out","CountP1","CountP2","CountP3","PvalueChi","meanT_concord","meanT_discord1","meanT_discord2","PvalueWCOMC1","PvalueWCOMC2","PvalueWC1C2")
-total_b=read.csv("/Users/Anton/Downloads/droso_blt_results.txt",stringsAsFactors=FALSE)
+total_b=read.csv("/Users/Anton/Downloads/droso_blt_results.txt",stringsAsFactors=FALSE,header=F)
 names(total_b)=names_vb
 total_b$PvalueChi=p.adjust(total_b$PvalueChi,method="fdr")
 total_b$PvalueWCOMC1=p.adjust(total_b$PvalueWCOMC1,method="fdr") 
 total_b$PvalueWCOMC2=p.adjust(total_b$PvalueWCOMC2,method="fdr") 
 total_b$PvalueWC1C2=p.adjust(total_b$PvalueWC1C2,method="fdr") 
 
+b_wilcox=get_intropair_blt_wilcox(total_b)
+b_chisq=get_intropair_blt_chisq(total_b)
 
-
-total_b=cbind(total_b,get_intropair_blt(total_b))  
-
-
-
-names(counts),counts,chi,mean(ccom),mean(c1),mean(c2),w_testc1,w_testc2,w_test
 
 
 #####################################Plotting Compare######################
@@ -377,6 +403,35 @@ q7=get_intomatrix_quibl(C7,total_q)
 q8=get_intomatrix_quibl(C8,total_q)
 q9=get_intomatrix_quibl(C9,total_q)
 
+
+bc1=get_intomatrix_blt(C1,b_chisq)
+bc2=get_intomatrix_blt(C2,b_chisq)
+bc3=get_intomatrix_blt(C3,b_chisq)
+bc4=get_intomatrix_blt(C4,b_chisq)
+bc5=get_intomatrix_blt(C5,b_chisq)
+bc6=get_intomatrix_blt(C6,b_chisq)
+bc7=get_intomatrix_blt(C7,b_chisq)
+bc8=get_intomatrix_blt(C8,b_chisq)
+bc9=get_intomatrix_blt(C9,b_chisq)
+
+bw1=get_intomatrix_blt(C1,b_wilcox)
+bw2=get_intomatrix_blt(C2,b_wilcox)
+bw3=get_intomatrix_blt(C3,b_wilcox)
+bw4=get_intomatrix_blt(C4,b_wilcox)
+bw5=get_intomatrix_blt(C5,b_wilcox)
+bw6=get_intomatrix_blt(C6,b_wilcox)
+bw7=get_intomatrix_blt(C7,b_wilcox)
+bw8=get_intomatrix_blt(C8,b_wilcox)
+bw9=get_intomatrix_blt(C9,b_wilcox)
+
+
+
+
+
+
+
+
+
 qc1=get_intomatrix_quibl_s(C1,total_q)
 qc2=get_intomatrix_quibl_s(C2,total_q)
 qc3=get_intomatrix_quibl_s(C3,total_q)
@@ -396,6 +451,18 @@ b6=get_intomatrix_blt(C6,total_b)
 b7=get_intomatrix_blt(C7,total_b)
 b8=get_intomatrix_blt(C8,total_b)
 b9=get_intomatrix_blt(C9,total_b)
+
+
+
+
+
+
+
+grid.arrange(q1,bc1,bw1,q2,bc2,bw2,q3,bc3,bw3,q4,bc4,bw4,ncol=3,nrow=4)
+quartz.save("C1_C4_quibl_bc_bw.png", type = "png",antialias=F,bg="white",dpi=400,pointsize=12)
+
+grid.arrange(q5,bc5,bw5,q6,bc6,bw6,q7,bc7,bw7,q8,bc8,bw8,q9,bc9,bw9,ncol=3,nrow=5)
+quartz.save("C5_C9_quibl_bc_bw.png", type = "png",antialias=F,bg="white",dpi=400,pointsize=12)
 
 
 
