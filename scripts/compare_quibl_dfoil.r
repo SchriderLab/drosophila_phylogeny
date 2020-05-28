@@ -42,6 +42,7 @@ get_intomatrix_quibl=function(taxa,dat)
     melted_m=melt(as.matrix(m),na.rm = TRUE)
     #Normalazing by the triplets that contain an introgressing pair (= Ntaxa-2)
     melted_m$value=melted_m$value/(length(taxa)-2)
+   
     g1=ggplot(melted_m, aes(Var2, Var1, fill = value))+geom_tile(color = "white")+scale_fill_gradientn(colors=jet(100),space = "Lab", name="N significant triplets/\nN triplets cointaining introgressing taxa") +theme_minimal()+theme(axis.title.x=element_blank(),axis.text.x=element_blank(),axis.ticks.x=element_blank())+coord_fixed()+labs(x="",y="")
     return(g1)
 }    
@@ -167,15 +168,21 @@ get_intropair_blt_wilcox=function(m)
         progress(i,nrow(m))
         if(m[i,"PvalueWC1C2"]<0.05)
         {
-            pair=as.character(m[i,c("P1out","P2out","P3out")][as.character(m[i,c("P1out","P2out","P3out")])!=as.character(m[i,c("P1out","P2out","P3out")][1:3!=which.max(m[i,c("CountP1","CountP2","CountP3")])][which.min(m[i,c("meanT_discord1","meanT_discord2")])])])
+            pair=as.character(m[i,c("P1out","P2out","P3out")][which(rank(m[i,c("CountP1","CountP2","CountP3")],ties.method = "random")!=2)])
+            if(m[i,c("CountP1","CountP2","CountP3")][which(rank(m[i,c("CountP1","CountP2","CountP3")])!=3)][1] > m[i,c("CountP1","CountP2","CountP3")][which(rank(m[i,c("CountP1","CountP2","CountP3")])!=3)][2] & m[i,"meanT_discord1"] < m[i,"meanT_discord2"] | m[i,c("CountP1","CountP2","CountP3")][which(rank(m[i,c("CountP1","CountP2","CountP3")])!=3)][1] < m[i,c("CountP1","CountP2","CountP3")][which(rank(m[i,c("CountP1","CountP2","CountP3")])!=3)][2] & m[i,"meanT_discord1"] > m[i,"meanT_discord2"])
+            {
+               pair=c(pair,"TRUE") 
+            }else{
+               pair=c(pair,"FALSE")  
+            }
             pair_v=rbind(pair_v,pair)
         }else{
-            pair=c("none","none")
+            pair=c("none","none","none")
             pair_v=rbind(pair_v,pair)
         }    
     }
     pair_v=data.frame(pair_v)
-    names(pair_v)=c("i1","i2")
+    names(pair_v)=c("i1","i2","totalbl_pass")
     rownames(pair_v) = c()
     return(pair_v)
 }
@@ -204,14 +211,8 @@ get_intropair_blt_chisq=function(m)
 
 
 
-
-
-
-
-
-
 # Plot matrix from BLT results 
-get_intomatrix_blt=function(taxa,dat)
+get_intomatrix=function(taxa,dat,sig)
 {
     m=matrix(0, nrow=length(taxa),ncol=length(taxa)) 
     m=data.frame(m)
@@ -250,6 +251,8 @@ C6=extract.clade(tt,256)$tip.label
 C7=extract.clade(tt,265)$tip.label
 C8=extract.clade(tt,289)$tip.label
 C9=extract.clade(tt,307)$tip.label
+
+sp_space=list(C1,C2,C3,C4,C5,C6,C7,C8,C9)
 
 
 
@@ -319,7 +322,7 @@ total_q$Qtrisig = total_q$Qtri<0.05
 total_q$sig=total_q$BICdiff < -30    
 
 
-
+/proj/matutelb/data_share/droso_tree/droso_genome_assemblies
 
 
 #total_q=total_q %>% distinct(triplet,C2 ,  mixprop1,  mixprop2, lambda2Dist, BIC2Dist ,   BIC1Dist, count ,.keep_all = T)
@@ -380,8 +383,6 @@ total_b$PvalueWC1C2=p.adjust(total_b$PvalueWC1C2,method="fdr")
 b_wilcox=get_intropair_blt_wilcox(total_b)
 b_chisq=get_intropair_blt_chisq(total_b)
 
-
-
 #####################################Plotting Compare######################
 d1=get_intomatrix_dfoil(C1,total_d)
 d2=get_intomatrix_dfoil(C2,total_d)
@@ -430,6 +431,22 @@ bw9=get_intomatrix_blt(C9,b_wilcox)
 
 
 
+f=1
+for (cl in sp_space)
+{    
+    assign(paste("bw",f,sep=""),get_intomatrix_blt(cl,b_wilcox))
+    assign(paste("bwtrue",f,sep=""),get_intomatrix_blt(cl,b_wilcox[b_wilcox$totalbl_pass=="TRUE",]))
+    assign(paste("bwfalse",f,sep=""),get_intomatrix_blt(cl,b_wilcox[b_wilcox$totalbl_pass=="FALSE",]))
+    f=f+1
+}    
+
+grid.arrange(bw1,bwtrue1,bwfalse1,bw2,bwtrue2,bwfalse2,bw3,bwtrue3,bwfalse3,bw4,bwtrue4,bwfalse4,ncol=3,nrow=4)
+quartz.save("C1_C4_bw_split.png", type = "png",antialias=F,bg="white",dpi=400,pointsize=12)
+grid.arrange(bw5,bwtrue5,bwfalse5,bw6,bwtrue6,bwfalse6,bw7,bwtrue7,bwfalse7,bw8,bwtrue8,bwfalse8,bw9,bwtrue9,bwfalse9,ncol=3,nrow=5)
+quartz.save("C5_C9_bw_split.png", type = "png",antialias=F,bg="white",dpi=400,pointsize=12)
+
+
+
 
 
 qc1=get_intomatrix_quibl_s(C1,total_q)
@@ -460,7 +477,6 @@ b9=get_intomatrix_blt(C9,total_b)
 
 grid.arrange(q1,bc1,bw1,q2,bc2,bw2,q3,bc3,bw3,q4,bc4,bw4,ncol=3,nrow=4)
 quartz.save("C1_C4_quibl_bc_bw.png", type = "png",antialias=F,bg="white",dpi=400,pointsize=12)
-
 grid.arrange(q5,bc5,bw5,q6,bc6,bw6,q7,bc7,bw7,q8,bc8,bw8,q9,bc9,bw9,ncol=3,nrow=5)
 quartz.save("C5_C9_quibl_bc_bw.png", type = "png",antialias=F,bg="white",dpi=400,pointsize=12)
 

@@ -12,6 +12,7 @@ test_triplet=function(taxa,gene_trees)
     root_tip_all=c()
     for (tre in gene_trees)
     {
+        
         if("Anopheles_gambiae" %in% tre$tip.label & all(taxa %in% tre$tip.label))
         {
             
