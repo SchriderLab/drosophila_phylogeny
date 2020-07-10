@@ -8,7 +8,7 @@ library(ggplot2)
 library(reshape2)
 library(gridExtra)
 
-phy_mcmc=readMCMCtree("/Users/Anton/Downloads/schemeA_FigTree.tre")
+phy_mcmc=readMCMCtree("/Users/anton/Dropbox/droso_phylogeny/schemeA.tre")
 phy=phy_mcmc$apePhy
 tt=read.table("/Users/Anton/Downloads/schemeA_mcmc.txt",header=T)
 tt=tt[,1:159]

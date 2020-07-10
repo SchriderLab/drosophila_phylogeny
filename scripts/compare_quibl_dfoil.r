@@ -212,7 +212,7 @@ get_intropair_blt_chisq=function(m)
 
 
 # Plot matrix from BLT results 
-get_intomatrix=function(taxa,dat,sig)
+get_intomatrix_blt=function(taxa,dat,sig)
 {
     m=matrix(0, nrow=length(taxa),ncol=length(taxa)) 
     m=data.frame(m)
@@ -230,7 +230,7 @@ get_intomatrix=function(taxa,dat,sig)
     melted_m=melt(as.matrix(m),na.rm = TRUE)
     #Normalazing by the triplets that contain an introgressing pair (= Ntaxa-2)
     melted_m$value=melted_m$value/(length(taxa)-2)
-    g1=ggplot(melted_m, aes(Var2, Var1, fill = value))+geom_tile(color = "white")+scale_fill_gradientn(colors=jet(100),space = "Lab", name="N significant triplets/\nN triplets cointaining introgressing taxa") +theme_minimal()+theme(axis.title.x=element_blank(),axis.text.x=element_blank(),axis.ticks.x=element_blank())+coord_fixed()+labs(x="",y="")
+    g1=ggplot(melted_m, aes(Var2, Var1, fill = value))+geom_tile(color = "white")+scale_fill_gradientn(colors=viridis(100),space = "Lab",name="") +theme_minimal()+theme(axis.title.x=element_blank(),axis.text.x=element_blank(),axis.ticks.x=element_blank())+coord_fixed()+labs(x="",y="")
     return(g1)
 }    
 
@@ -242,22 +242,22 @@ get_intomatrix=function(taxa,dat,sig)
 tt=read.tree("MLrooted.tre")
 
 
-C1=extract.clade(tt,168)$tip.label
-C2=extract.clade(tt,185)$tip.label
-C3=extract.clade(tt,204)$tip.label
-C4=extract.clade(tt,226)$tip.label
-C5=extract.clade(tt,245)$tip.label
-C6=extract.clade(tt,256)$tip.label
-C7=extract.clade(tt,265)$tip.label
-C8=extract.clade(tt,289)$tip.label
-C9=extract.clade(tt,307)$tip.label
+C7=extract.clade(tt,168)$tip.label
+C6=extract.clade(tt,185)$tip.label
+C9=extract.clade(tt,204)$tip.label
+C8=extract.clade(tt,226)$tip.label
+C2=extract.clade(tt,245)$tip.label
+C3=extract.clade(tt,256)$tip.label
+C5=extract.clade(tt,265)$tip.label
+C4=extract.clade(tt,289)$tip.label
+C1=extract.clade(tt,307)$tip.label
 
 sp_space=list(C1,C2,C3,C4,C5,C6,C7,C8,C9)
 
 
 
 
-total_q=read.csv("/Users/Anton/Downloads/droso_quibl_results.txt",header=F,stringsAsFactors=F)
+total_q=read.csv("droso_quibl_results.txt",header=F,stringsAsFactors=F)
 names(total_q)=c("clade","id","P1","P2","P3","outgroup","Com1","Com2","mixprop1","mixprop2","lambda2Dist","lambda1Dist","BIC2Dist","BIC1Dist","count")
 total_q$clade=unlist(lapply(strsplit(as.character(total_q$clade), "_"),"[",1))
 #total_q=total_q[complete.cases(total_q), ] 
@@ -358,7 +358,7 @@ grid.arrange(g1,gq1,g2,gq2,nrow=2,ncol=2)
 
 names_v=c("clade","P1","P2","P3","P4","Out","chrom1","position", "AAAAA" , "AAABA" , "AABAA" , "AABBA" , "ABAAA" , "ABABA" , "ABBAA" , "ABBBA" , "BAAAA" , "BAABA" , "BABAA" , "BABBA" , "BBAAA" ,"BBABA","BBBAA","BBBBA",'chromdup','coord','total','dtotal','T12','T34','T1234','DFO_left','DFO_right','DFO_total','DFO_stat','DFO_chisq','DFO_Pvalue','DIL_left','DIL_right','DIL_total','DIL_stat','DIL_chisq','DIL_Pvalue','DFI_left','DFI_right','DFI_total','DFI_stat','DFI_chisq','DFI_Pvalue','DOL_left','DOL_right','DOL_total','DOL_stat','DOL_chisq','DOL_Pvalue','introgression','introgna','intrognone','introg13','introg14','introg23','introg24','introg31','introg41','introg32','introg42','introg123','introg124')
 
-total_d=read.csv("/Users/Anton/Downloads/droso_dfoil_results.txt",stringsAsFactors=FALSE,header=F)
+total_d=read.csv("droso_dfoil_results.txt",stringsAsFactors=FALSE,header=F)
 names(total_d)=names_v
 total_d=total_d[total_d$T12<total_d$T34,]
 
@@ -373,7 +373,7 @@ total_d=cbind(total_d,get_intropair_dfoil(total_d))
 #################################################################### Branch Length Test ################################################
 
 names_vb=c("clade","P1out","P2out","P3out","CountP1","CountP2","CountP3","PvalueChi","meanT_concord","meanT_discord1","meanT_discord2","PvalueWCOMC1","PvalueWCOMC2","PvalueWC1C2")
-total_b=read.csv("/Users/Anton/Downloads/droso_blt_results.txt",stringsAsFactors=FALSE,header=F)
+total_b=read.csv("droso_blt_results.txt",stringsAsFactors=FALSE,header=F)
 names(total_b)=names_vb
 total_b$PvalueChi=p.adjust(total_b$PvalueChi,method="fdr")
 total_b$PvalueWCOMC1=p.adjust(total_b$PvalueWCOMC1,method="fdr") 
@@ -382,6 +382,25 @@ total_b$PvalueWC1C2=p.adjust(total_b$PvalueWC1C2,method="fdr")
 
 b_wilcox=get_intropair_blt_wilcox(total_b)
 b_chisq=get_intropair_blt_chisq(total_b)
+
+names(b_wilcox)=c("i1_wilx","i2_wilx","totalbl_pass")
+names(b_chisq)=c("i1_chi","i2_chi")
+
+total_b=cbind(total_b,b_chisq,b_wilcox)
+
+#Overlap Hypergeometric test 
+for (cl in c("C1","C2","C3","C4","C5","C6","C7","C8","C9"))
+{    
+    a=total_b[total_b$clade==cl,]
+    tot=nrow(a)
+    overl=sum(as.numeric(a$i1_chi!="none" & a$i1_wilx!="none"))
+    tot_chi=sum(as.numeric(a$i1_chi!="none"))
+    tot_wilx=sum(as.numeric(a$i1_wilx!="none"))
+    print(cl)
+    print(phyper(overl, tot_wilx, tot - tot_wilx, tot_chi, lower.tail = FALSE))
+    print(c(tot_chi-overl,overl,tot_wilx-overl,sum(as.numeric(a$i1_chi=="none" & a$i1_wilx=="none"))))
+    print(tot)
+}
 
 #####################################Plotting Compare######################
 d1=get_intomatrix_dfoil(C1,total_d)
@@ -474,12 +493,14 @@ b9=get_intomatrix_blt(C9,total_b)
 
 
 
-
-grid.arrange(q1,bc1,bw1,q2,bc2,bw2,q3,bc3,bw3,q4,bc4,bw4,ncol=3,nrow=4)
-quartz.save("C1_C4_quibl_bc_bw.png", type = "png",antialias=F,bg="white",dpi=400,pointsize=12)
-grid.arrange(q5,bc5,bw5,q6,bc6,bw6,q7,bc7,bw7,q8,bc8,bw8,q9,bc9,bw9,ncol=3,nrow=5)
-quartz.save("C5_C9_quibl_bc_bw.png", type = "png",antialias=F,bg="white",dpi=400,pointsize=12)
-
+quartz(width=12, height=9)
+grid.arrange(bc1,bw1,bc2,bw2,bc3,bw3,bc4,bw4,bc5,bw5,ncol=2,nrow=5)
+quartz.save("C1_C5_quibl_bc_bw.png", type = "png",antialias=F,bg="white",dpi=400,pointsize=12)
+dev.off()
+quartz(width=12, height=7.2)
+grid.arrange(bc6,bw6,bc7,bw7,bc8,bw8,bc9,bw9,ncol=2,nrow=4)
+quartz.save("C6_C9_quibl_bc_bw.png", type = "png",antialias=F,bg="white",dpi=400,pointsize=12)
+dev.off()
 
 
 grid.arrange(b1,b2,b3,b4,ncol=1,nrow=4)
