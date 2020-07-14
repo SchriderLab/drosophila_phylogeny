@@ -387,6 +387,14 @@ names(b_wilcox)=c("i1_wilx","i2_wilx","totalbl_pass")
 names(b_chisq)=c("i1_chi","i2_chi")
 
 total_b=cbind(total_b,b_chisq,b_wilcox)
+total_b$clade=ifelse(total_b$clade=="C1","C7",
+              ifelse(total_b$clade=="C2","C6",
+              ifelse(total_b$clade=="C3","C9",
+              ifelse(total_b$clade=="C4","C8",
+              ifelse(total_b$clade=="C5","C2",
+              ifelse(total_b$clade=="C6","C3",
+              ifelse(total_b$clade=="C7","C5",
+              ifelse(total_b$clade=="C8","C4","C1"))))))))
 
 #Overlap Hypergeometric test 
 for (cl in c("C1","C2","C3","C4","C5","C6","C7","C8","C9"))
@@ -401,6 +409,42 @@ for (cl in c("C1","C2","C3","C4","C5","C6","C7","C8","C9"))
     print(c(tot_chi-overl,overl,tot_wilx-overl,sum(as.numeric(a$i1_chi=="none" & a$i1_wilx=="none"))))
     print(tot)
 }
+
+hyper_subsample=function(tabl,size=9,cl)
+{
+    sub_tabl=tabl[tabl$clade==cl,]
+    sps=unique(c(sub_tabl$P1out,sub_tabl$P2out,sub_tabl$P3out))
+    p_vals=c()
+    for(i in 1:10000)
+    {
+        
+        sps_sub=sample(sps,size=size)
+        a=sub_tabl[sub_tabl$P1out %in% sps_sub & sub_tabl$P2out %in% sps_sub & sub_tabl$P3out %in% sps_sub,]
+        tot=nrow(a)
+        overl=sum(as.numeric(a$i1_chi!="none" & a$i1_wilx!="none"))
+        tot_chi=sum(as.numeric(a$i1_chi!="none"))
+        tot_wilx=sum(as.numeric(a$i1_wilx!="none"))
+        hyper_p=phyper(overl, tot_wilx, tot - tot_wilx, tot_chi, lower.tail = FALSE)
+        p_vals=c(p_vals,hyper_p)
+        
+    }    
+    return(p_vals)
+    
+}    
+
+par(mfrow=c(2,5))
+for (cl in c("C1","C2","C3","C4","C5","C6","C7","C8","C9"))
+{ 
+    hist(log(hyper_subsample(total_b,8,cl)),col="grey",xlab=cl,main="")
+    abline(v=log(0.05),lty=2,col="red")
+}
+    
+
+
+
+
+
+
 
 #####################################Plotting Compare######################
 d1=get_intomatrix_dfoil(C1,total_d)
