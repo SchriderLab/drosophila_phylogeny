@@ -435,7 +435,10 @@ hyper_subsample=function(tabl,size=9,cl)
 par(mfrow=c(2,5))
 for (cl in c("C1","C2","C3","C4","C5","C6","C7","C8","C9"))
 { 
-    hist(log(hyper_subsample(total_b,8,cl)),col="grey",xlab=cl,main="")
+    pval=hyper_subsample(total_b,8,cl)
+    n=sum(pval< 0.05 & pval!=0)/sum(pval!=0)
+    
+    hist(log(pval),col="grey",xlab=cl,main=n)
     abline(v=log(0.05),lty=2,col="red")
 }
     
