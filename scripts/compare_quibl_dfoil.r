@@ -48,9 +48,6 @@ get_intomatrix_quibl=function(taxa,dat)
 }    
 
 
-
-
-
 # Plot matrix from QuiBL counts results 
 get_intomatrix_quibl_c=function(taxa,dat)
 {
@@ -168,24 +165,26 @@ get_intropair_blt_wilcox=function(m)
     for (i in 1:nrow(m))
     {
         progress(i,nrow(m))
+        pair=as.character(m[i,c("P1out","P2out","P3out")][which(rank(m[i,c("CountP1","CountP2","CountP3")],ties.method = "random")!=2)])
         if(m[i,"PvalueWC1C2"]<0.05)
         {
-            pair=as.character(m[i,c("P1out","P2out","P3out")][which(rank(m[i,c("CountP1","CountP2","CountP3")],ties.method = "random")!=2)])
+            
             if(m[i,c("CountP1","CountP2","CountP3")][which(rank(m[i,c("CountP1","CountP2","CountP3")])!=3)][1] > m[i,c("CountP1","CountP2","CountP3")][which(rank(m[i,c("CountP1","CountP2","CountP3")])!=3)][2] & m[i,"meanT_discord1"] < m[i,"meanT_discord2"] | m[i,c("CountP1","CountP2","CountP3")][which(rank(m[i,c("CountP1","CountP2","CountP3")])!=3)][1] < m[i,c("CountP1","CountP2","CountP3")][which(rank(m[i,c("CountP1","CountP2","CountP3")])!=3)][2] & m[i,"meanT_discord1"] > m[i,"meanT_discord2"])
             {
-               pair=c(pair,"TRUE") 
+               pair=c(pair,"TRUE","TRUE") 
             }else{
-               pair=c(pair,"FALSE")  
+               pair=c(pair,"TRUE","FALSE")  
             }
             pair_v=rbind(pair_v,pair)
         }else{
-            pair=c("none","none","none")
+            pair=c(pair,"FALSE","FALSE")
             pair_v=rbind(pair_v,pair)
         }    
     }
     pair_v=data.frame(pair_v)
-    names(pair_v)=c("i1","i2","totalbl_pass")
+    names(pair_v)=c("i1","i2","pass","totalbl_pass")
     rownames(pair_v) = c()
+    pair_v[,c("i1","i2")]=t(apply(pair_v[,c("i1","i2")],1,sort))
     return(pair_v)
 }
 
@@ -196,42 +195,53 @@ get_intropair_blt_chisq=function(m)
     for (i in 1:nrow(m))
     {
         progress(i,nrow(m))
+        pair=as.character(m[i,c("P1out","P2out","P3out")][which(rank(m[i,c("CountP1","CountP2","CountP3")],ties.method = "random")!=2)])
         if(m[i,"PvalueChi"]<0.05)
         {
-            pair=as.character(m[i,c("P1out","P2out","P3out")][which(rank(m[i,c("CountP1","CountP2","CountP3")])!=2)])
-            pair_v=rbind(pair_v,pair)
+            pair_v=rbind(pair_v,c(pair,"TRUE"))
         }else{
-            pair=c("none","none")
-            pair_v=rbind(pair_v,pair)
+            pair_v=rbind(pair_v,c(pair,"FALSE"))
         }    
     }
     pair_v=data.frame(pair_v)
-    names(pair_v)=c("i1","i2")
+    names(pair_v)=c("i1","i2","pass")
     rownames(pair_v) = c()
+    pair_v[,c("i1","i2")]=t(apply(pair_v[,c("i1","i2")],1,sort))
     return(pair_v)
 }
 
 
 
-# Plot matrix from BLT results 
+# Plot matrix from BLT/Chisq results 
 get_intomatrix_blt=function(taxa,dat,sig)
 {
     m=matrix(0, nrow=length(taxa),ncol=length(taxa)) 
     m=data.frame(m)
     colnames(m)=taxa
     rownames(m)=taxa
-    dat_int=dat[dat$i1 %in% taxa | dat$i2 %in% taxa ,c("i1","i2")]
+    n=m
+    dat_int=dat[dat$i1 %in% taxa | dat$i2 %in% taxa ,c("i1","i2","pass")]
     for (i in 1:nrow(dat_int))
     {
         a=dat_int[i,"i1"]
         b=dat_int[i,"i2"]
-        m[rownames(m)==a,colnames(m)==b]=m[rownames(m)==a,colnames(m)==b]+1
+        if (dat_int[i,"pass"]=="TRUE")
+        {    
+            m[rownames(m)==a,colnames(m)==b]=m[rownames(m)==a,colnames(m)==b]+1
+            n[rownames(n)==a,colnames(n)==b]=m[rownames(n)==a,colnames(n)==b]+1
+        }else{
+            n[rownames(n)==a,colnames(n)==b]=m[rownames(n)==a,colnames(n)==b]+1  
+        }   
+        
     }    
     m=m+t(m)
+    n=n+t(n)
     m[upper.tri(m)]=NA
-    melted_m=melt(as.matrix(m),na.rm = TRUE)
-    #Normalazing by the triplets that contain an introgressing pair (= Ntaxa-2)
-    melted_m$value=melted_m$value/(length(taxa)-2)
+    n[upper.tri(n)]=NA
+    #Normalazing by the triplets that contain an introgressing pair
+    norm_m=as.matrix(m/n)
+    norm_m[is.nan(norm_m)]=0
+    melted_m=melt(as.matrix(norm_m),na.rm = TRUE)
     g1=ggplot(melted_m, aes(Var2, Var1, fill = value))+geom_tile(color = "white")+scale_fill_gradientn(colors=viridis(100),space = "Lab",name="") +theme_minimal()+theme(axis.title.x=element_blank(),axis.text.x=element_blank(),axis.ticks.x=element_blank())+coord_fixed()+labs(x="",y="")
     return(g1)
 }    
@@ -324,8 +334,6 @@ total_q$Qtrisig = total_q$Qtri<0.05
 total_q$sig=total_q$BICdiff < -30    
 
 
-/proj/matutelb/data_share/droso_tree/droso_genome_assemblies
-
 
 #total_q=total_q %>% distinct(triplet,C2 ,  mixprop1,  mixprop2, lambda2Dist, BIC2Dist ,   BIC1Dist, count ,.keep_all = T)
 #total_q_min=data.frame(total_q %>%  group_by(triplet) %>% filter(count!=max(count)))
@@ -385,8 +393,10 @@ total_b$PvalueWC1C2=p.adjust(total_b$PvalueWC1C2,method="fdr")
 b_wilcox=get_intropair_blt_wilcox(total_b)
 b_chisq=get_intropair_blt_chisq(total_b)
 
-names(b_wilcox)=c("i1_wilx","i2_wilx","totalbl_pass")
-names(b_chisq)=c("i1_chi","i2_chi")
+m_ch=b_chisq
+m_wilx=b_wilcox
+names(b_wilcox)=c("i1_wilx","i2_wilx","pass_wilx","totalbl_pass")
+names(b_chisq)=c("i1_chi","i2_chi","pass_chi")
 
 total_b=cbind(total_b,b_chisq,b_wilcox)
 total_b$clade=ifelse(total_b$clade=="C1","C7",
@@ -403,12 +413,12 @@ for (cl in c("C1","C2","C3","C4","C5","C6","C7","C8","C9"))
 {    
     a=total_b[total_b$clade==cl,]
     tot=nrow(a)
-    overl=sum(as.numeric(a$i1_chi!="none" & a$i1_wilx!="none"))
-    tot_chi=sum(as.numeric(a$i1_chi!="none"))
-    tot_wilx=sum(as.numeric(a$i1_wilx!="none"))
+    overl=sum(as.numeric(a$pass_chi!="FALSE" & a$pass_wilx!="FALSE"))
+    tot_chi=sum(as.numeric(a$pass_chi=="TRUE"))
+    tot_wilx=sum(as.numeric(a$pass_wilx=="TRUE"))
     print(cl)
     print(phyper(overl, tot_wilx, tot - tot_wilx, tot_chi, lower.tail = FALSE))
-    print(c(tot_chi-overl,overl,tot_wilx-overl,sum(as.numeric(a$i1_chi=="none" & a$i1_wilx=="none"))))
+    print(c(tot_chi-overl,overl,tot_wilx-overl,sum(as.numeric(a$pass_chi=="FALSE" & a$pass_wilx=="FALSE"))))
     print(tot)
 }
 
@@ -417,15 +427,15 @@ hyper_subsample=function(tabl,size=9,cl)
     sub_tabl=tabl[tabl$clade==cl,]
     sps=unique(c(sub_tabl$P1out,sub_tabl$P2out,sub_tabl$P3out))
     p_vals=c()
-    for(i in 1:10000)
+    for(i in 1:100000)
     {
         
         sps_sub=sample(sps,size=size)
         a=sub_tabl[sub_tabl$P1out %in% sps_sub & sub_tabl$P2out %in% sps_sub & sub_tabl$P3out %in% sps_sub,]
         tot=nrow(a)
-        overl=sum(as.numeric(a$i1_chi!="none" & a$i1_wilx!="none"))
-        tot_chi=sum(as.numeric(a$i1_chi!="none"))
-        tot_wilx=sum(as.numeric(a$i1_wilx!="none"))
+        overl=sum(as.numeric(a$pass_chi!="FALSE" & a$pass_wilx!="FALSE"))
+        tot_chi=sum(as.numeric(a$pass_chi=="TRUE"))
+        tot_wilx=sum(as.numeric(a$pass_wilx=="TRUE"))
         hyper_p=phyper(overl, tot_wilx, tot - tot_wilx, tot_chi, lower.tail = FALSE)
         p_vals=c(p_vals,hyper_p)
         
@@ -438,15 +448,40 @@ par(mfrow=c(2,5))
 for (cl in c("C1","C2","C3","C4","C5","C6","C7","C8","C9"))
 { 
     pval=hyper_subsample(total_b,8,cl)
-    n=sum(pval< 0.05 & pval!=0)/sum(pval!=0)
+    n=round(sum(pval< 0.05 & pval!=0)/sum(pval!=0),digits=3)
     
     hist(log(pval),col="grey",xlab=cl,main=n)
     abline(v=log(0.05),lty=2,col="red")
 }
     
+bc1=get_intomatrix_blt(C1,m_ch)
+bc2=get_intomatrix_blt(C2,m_ch)
+bc3=get_intomatrix_blt(C3,m_ch)
+bc4=get_intomatrix_blt(C4,m_ch)
+bc5=get_intomatrix_blt(C5,m_ch)
+bc6=get_intomatrix_blt(C6,m_ch)
+bc7=get_intomatrix_blt(C7,m_ch)
+bc8=get_intomatrix_blt(C8,m_ch)
+bc9=get_intomatrix_blt(C9,m_ch)
 
+bw1=get_intomatrix_blt(C1,m_wilx)
+bw2=get_intomatrix_blt(C2,m_wilx)
+bw3=get_intomatrix_blt(C3,m_wilx)
+bw4=get_intomatrix_blt(C4,m_wilx)
+bw5=get_intomatrix_blt(C5,m_wilx)
+bw6=get_intomatrix_blt(C6,m_wilx)
+bw7=get_intomatrix_blt(C7,m_wilx)
+bw8=get_intomatrix_blt(C8,m_wilx)
+bw9=get_intomatrix_blt(C9,m_wilx)
 
-
+quartz(width=12, height=9)
+grid.arrange(bc1,bw1,bc2,bw2,bc3,bw3,bc4,bw4,bc5,bw5,ncol=2,nrow=5)
+quartz.save("C1_C5_bc_bw.png", type = "png",antialias=F,bg="white",dpi=400,pointsize=12)
+dev.off()
+quartz(width=12, height=7.2)
+grid.arrange(bc6,bw6,bc7,bw7,bc8,bw8,bc9,bw9,ncol=2,nrow=4)
+quartz.save("C6_C9_bc_bw.png", type = "png",antialias=F,bg="white",dpi=400,pointsize=12)
+dev.off()
 
 
 
@@ -544,11 +579,11 @@ b9=get_intomatrix_blt(C9,total_b)
 
 quartz(width=12, height=9)
 grid.arrange(bc1,bw1,bc2,bw2,bc3,bw3,bc4,bw4,bc5,bw5,ncol=2,nrow=5)
-quartz.save("C1_C5_quibl_bc_bw.png", type = "png",antialias=F,bg="white",dpi=400,pointsize=12)
+quartz.save("C1_C5_bc_bw.png", type = "png",antialias=F,bg="white",dpi=400,pointsize=12)
 dev.off()
 quartz(width=12, height=7.2)
 grid.arrange(bc6,bw6,bc7,bw7,bc8,bw8,bc9,bw9,ncol=2,nrow=4)
-quartz.save("C6_C9_quibl_bc_bw.png", type = "png",antialias=F,bg="white",dpi=400,pointsize=12)
+quartz.save("C6_C9_bc_bw.png", type = "png",antialias=F,bg="white",dpi=400,pointsize=12)
 dev.off()
 
 
