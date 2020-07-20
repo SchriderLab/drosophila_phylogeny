@@ -212,7 +212,7 @@ get_intropair_blt_chisq=function(m)
 
 
 
-# Plot matrix from BLT/Chisq results 
+# Plot matrix from BLT/Chisq/QuiBl results 
 get_intomatrix_blt=function(taxa,dat,sig)
 {
     m=matrix(0, nrow=length(taxa),ncol=length(taxa)) 
@@ -276,91 +276,41 @@ total_q$clade=unlist(lapply(strsplit(as.character(total_q$clade), "_"),"[",1))
 total_q$BICdiff = total_q$BIC2-total_q$BIC1
 total_q$triplet=as.character(apply(total_q[,c("P1","P2","P3")],1,paste,collapse="_"))
 total_q=cbind(total_q,get_intropair(total_q))
-total_q$common=FALSE
-
-chiPtri=c()
-for (trip in unique(as.character(total_q$triplet)))
-{
-    p_v=chisq.test(subset(total_q,triplet==trip)$count)$p.value
-    chiPtri=c(chiPtri,p_v)
-}    
-chiPtri=p.adjust(chiPtri,method="fdr")
-total_q$Qtri=rep(chiPtri,each=3)
-
-
-
-
-
-
-
-for (trip in unique(as.character(total_q$triplet)))
-{
-  maxVal=max(subset(total_q,triplet==trip)$count)
-  # Handle ties
-  if(nrow(total_q[which(total_q$triplet==trip & total_q$count==maxVal),])>1)
-  {
-     total_q[which(total_q$triplet==trip & total_q$count==maxVal),][1,]$common=TRUE 
-  }else{    
-    total_q[which(total_q$triplet==trip & total_q$count==maxVal),]$common=TRUE
-  }    
-}
-
-total_min=total_q[total_q$common==F,]
-total_max=total_q[total_q$common==T,]
-chiP=c()
-for (trip in unique(as.character(total_min$triplet)))
-{
-    co=subset(total_min,triplet==trip)$count
-    # Handle cases when both incongruent topologies have 0 counts (very few cases)
-    if (all(co==0))
-    {
-        p_v=chisq.test(co+1)$p.value
-        chiP=c(chiP,p_v)
-    }else{
-        
-        p_v=chisq.test(subset(total_min,triplet==trip)$count)$p.value
-        chiP=c(chiP,p_v)
-    }
-}
-       
-chiP=p.adjust(chiP,method="fdr")
-total_min$Q=rep(chiP,each=2)
-total_max$Q=0
-total_q=rbind(total_min,total_max)
-total_q=total_q[complete.cases(total_q), ] 
 total_q$BICdiff = total_q$BIC2-total_q$BIC1
-total_q$Qsig = total_q$Q<0.05
-total_q$Qtrisig = total_q$Qtri<0.05
-total_q$sig=total_q$BICdiff < -30    
+total_q$pass=total_q$BICdiff < -30 
+
+
+total_q$clade=ifelse(total_q$clade=="C1","C7",
+              ifelse(total_q$clade=="C2","C6",
+              ifelse(total_q$clade=="C3","C9",
+              ifelse(total_q$clade=="C4","C8",
+              ifelse(total_q$clade=="C5","C2",
+              ifelse(total_q$clade=="C6","C3",
+              ifelse(total_q$clade=="C7","C5",
+              ifelse(total_q$clade=="C8","C4","C1"))))))))
+
+total_q=total_q[complete.cases(total_q$pass),]
+
+q1=get_intomatrix_blt(C1,total_q)
+q2=get_intomatrix_blt(C2,total_q)
+q3=get_intomatrix_blt(C3,total_q)
+q4=get_intomatrix_blt(C4,total_q)
+q5=get_intomatrix_blt(C5,total_q)
+q6=get_intomatrix_blt(C6,total_q)
+q7=get_intomatrix_blt(C7,total_q)
+q8=get_intomatrix_blt(C8,total_q)
+q9=get_intomatrix_blt(C9,total_q)
+
+
+quartz(width=12, height=9)
+grid.arrange(q1,q6,q2,q7,q3,q8,q4,q9,q5,ncol=2,nrow=5)
+quartz.save("C1_C9_quibl_bw.png", type = "png",antialias=F,bg="white",dpi=400,pointsize=12)
+dev.off()
 
 
 
-#total_q=total_q %>% distinct(triplet,C2 ,  mixprop1,  mixprop2, lambda2Dist, BIC2Dist ,   BIC1Dist, count ,.keep_all = T)
-#total_q_min=data.frame(total_q %>%  group_by(triplet) %>% filter(count!=max(count)))
-#total_q_max=data.frame(total_q %>%  group_by(triplet) %>% filter(count==max(count)))
-
-total_q$genus="Drosophila"
-total_q$type=ifelse(total_q$common==TRUE & total_q$sig==TRUE,"Concordant",ifelse(total_q$common==TRUE & total_q$sig==FALSE,"Extreme ILS",ifelse(total_q$sig==FALSE & total_q$common==FALSE,"ILS","Introgression+ILS")))
-total_q$Qtype=ifelse(total_q$common==TRUE & total_q$Qsig==TRUE,"Concordant",ifelse(total_q$common==TRUE & total_q$Qtrisig==FALSE,"Extreme ILS",ifelse(total_q$Qsig==FALSE & total_q$common==FALSE ,"ILS","Introgression+ILS")))
 
 
-####Plotting
-total_mixprop=melt(total_q[total_q$sig==TRUE & total_q$common==FALSE,c("mixprop2","clade","genus")],value.name="taxon",id=c("mixprop2"))
-g1=ggplot(total_mixprop, aes(x=taxon, y=mixprop2))+geom_violin(fill='salmon')+facet_grid(~variable,scales = "free", space = "free")+stat_summary(fun.y=median, geom="point", size=2, color="black")+geom_boxplot(width=0.01,outlier.size=-1)+ylab(expression(pi[2]))+xlab("")
-
-total_mixprop=melt(total_q[total_q$Qsig==TRUE & total_q$common==FALSE,c("mixprop2","clade","genus")],value.name="taxon",id=c("mixprop2"))
-gq1=ggplot(total_mixprop, aes(x=taxon, y=mixprop2))+geom_violin(fill='salmon')+facet_grid(~variable,scales = "free", space = "free")+stat_summary(fun.y=median, geom="point", size=2, color="black")+geom_boxplot(width=0.01,outlier.size=-1)+ylab(expression(pi[2]))+xlab("")
-
-
-total_p=melt(total_q[ ,c("type","clade","genus")],id="type",value.name="taxon")
-g2=ggplot(total_p, aes(x=taxon, y=..count../sum(..count..),fill=type))+geom_bar(position="fill")+facet_grid(~variable,scales = "free", space = "free")+geom_text(aes(label=..count..),stat="count",position=position_fill(vjust=0.5))+theme(legend.position=c("top") ,legend.direction="horizontal")+ylab("Proportion")+xlab("")+scale_fill_manual(values=c("gray48","orange","gold", "salmon"),name="")
-
-
-total_p=melt(total_q[ ,c("Qtype","clade","genus")],id="Qtype",value.name="taxon")
-gq2=ggplot(total_p, aes(x=taxon, y=..count../sum(..count..),fill=Qtype))+geom_bar(position="fill")+facet_grid(~variable,scales = "free", space = "free")+geom_text(aes(label=..count..),stat="count",position=position_fill(vjust=0.5))+theme(legend.position=c("top") ,legend.direction="horizontal")+ylab("Proportion")+xlab("")+scale_fill_manual(values=c("gray48","orange","gold", "salmon"),name="")
-
-quartz(width=15.4,height=10.6)
-grid.arrange(g1,gq1,g2,gq2,nrow=2,ncol=2)
 
 #################################################################### Dfoil ##############################################################
 
