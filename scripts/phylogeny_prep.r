@@ -1,5 +1,4 @@
 library("MCMCtreeR")
-<<<<<<< HEAD
 library(ape)
 library(laser)
 library(geiger)
@@ -10,12 +9,8 @@ library(reshape2)
 library(gridExtra)
 
 phy_mcmc=readMCMCtree("/Users/anton/Dropbox/droso_phylogeny/schemeA.tre")
-=======
-library("ape")
-
 
 phy_mcmc=readMCMCtree("schemeA.tre")
->>>>>>> 70d273d427c8591e90fbc13fa458fd33c999251c
 phy=phy_mcmc$apePhy
 tt=read.table("schemeA_mcmc.txt",header=T)
 
