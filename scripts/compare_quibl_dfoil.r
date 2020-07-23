@@ -289,7 +289,25 @@ total_q$clade=ifelse(total_q$clade=="C1","C7",
               ifelse(total_q$clade=="C7","C5",
               ifelse(total_q$clade=="C8","C4","C1"))))))))
 
+
+#identify triplets with the most counts
+common=c()
+i=0
+for (trip in unique(as.character(total_q$triplet)))
+{
+    i=i+1
+    progress(i,length(unique(as.character(total_q$triplet))))
+    gcount=total_q[total_q$triplet==trip,"count"]+1
+    pos=rank(gcount,ties.method ="random")
+    cl=c("discord2","discord1","common")
+    common=c(common,cl[pos])
+}
+
+total_q$common=common
 total_q=total_q[complete.cases(total_q$pass),]
+total_q=total_q[total_q$common!="common",]
+#total_q=total_q[total_q$common!="discord1",]
+
 
 q1=get_intomatrix_blt(C1,total_q)
 q2=get_intomatrix_blt(C2,total_q)
@@ -377,7 +395,7 @@ hyper_subsample=function(tabl,size=9,cl)
     sub_tabl=tabl[tabl$clade==cl,]
     sps=unique(c(sub_tabl$P1out,sub_tabl$P2out,sub_tabl$P3out))
     p_vals=c()
-    for(i in 1:100000)
+    for(i in 1:10000)
     {
         
         sps_sub=sample(sps,size=size)
@@ -394,16 +412,21 @@ hyper_subsample=function(tabl,size=9,cl)
     
 }    
 
-par(mfrow=c(2,5))
+quartz(width=7, height=7)
+par(mfrow=c(3,3))
+i=1
 for (cl in c("C1","C2","C3","C4","C5","C6","C7","C8","C9"))
 { 
     pval=hyper_subsample(total_b,8,cl)
     n=round(sum(pval< 0.05 & pval!=0)/sum(pval!=0),digits=3)
     
-    hist(log(pval),col="grey",xlab=cl,main=n)
-    abline(v=log(0.05),lty=2,col="red")
+    hist(log(pval),col="grey",xlab="",ylab="Frequency",prob=TRUE,main=paste("Clade ",i," (",n,")"),nclass=20)
+    abline(v=log(0.05),lty=3,col="red",lwd=2)
+    i=i+1
 }
-    
+quartz.save("Power.pdf", type = "pdf",antialias=F,bg="white",dpi=400,pointsize=12)
+dev.off()
+
 bc1=get_intomatrix_blt(C1,m_ch)
 bc2=get_intomatrix_blt(C2,m_ch)
 bc3=get_intomatrix_blt(C3,m_ch)
