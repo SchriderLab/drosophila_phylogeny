@@ -5,6 +5,8 @@ library('reshape2')
 library('dplyr')
 library('gridExtra')
 library("svMisc")
+library("MCMCtreeR")
+library('phytools')
 
 #Identify introgressing taxa pair from QuiBL result
 get_intropair=function(m)
@@ -457,6 +459,32 @@ quartz.save("C6_C9_bc_bw.png", type = "png",antialias=F,bg="white",dpi=400,point
 dev.off()
 
 
+#####################################Time-introgression plot###############
+
+
+phy_mcmc=readMCMCtree("schemeA.tre")
+phy=phy_mcmc$apePhy
+tree_h=nodeheight(phy, node=159)
+age_v=c()
+for (i in 1:nrow(total_b))
+{
+    age_pair=tree_h-findMRCA(phy,c(total_b[i,"i1_chi"],total_b[i,"i2_chi"]),type="height")
+    age_v=c(age_v,age_pair)
+}    
+total_b$tmrca=age_v
+
+
+for (cl in c("C1","C2","C3","C4","C5","C6","C7","C8","C9"))
+{    
+    all_a=total_b[total_b$clade==cl,"tmrca"]
+    sig_a=total_b[total_b$clade==cl & total_b$pass_chi==TRUE & total_b$pass_wilx==TRUE ,"tmrca"]
+    d_a=data.frame(Age=c(all_a,sig_a),Distribution=c(rep("All",length(all_a)),rep("Sig.",length(sig_a))))
+    quartz(width=6.5, height=4.3)
+    p=ggplot(d_a, aes(x=Age, fill=Distribution))+geom_density(alpha=1,position = "stack")+scale_fill_manual(values=c("dodgerblue4", "gold"))
+    print(p)
+    quartz.save(paste(cl,"_agedistr.png",sep=""), type = "png",antialias=F,bg="white",dpi=400,pointsize=12)
+    dev.off()
+}
 
 
 #####################################Plotting Compare######################
