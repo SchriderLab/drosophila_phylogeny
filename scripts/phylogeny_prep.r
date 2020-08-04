@@ -22,9 +22,6 @@ quartz.save("Fig1_droso.pdf", type = "pdf",antialias=F,bg="white",dpi=400,points
 
 
 
-
-
-
 quartz(width=5.5,height=12) 
 MCMC.tree.plot(extract.clade(phy, 164),analysis.type = "MCMCtree",MCMC.chain=tt[,c(1,6:162)],plot.type = "distributions",density.col = adjustcolor( "navy", alpha.f = 0.5),density.border.col = "navy", lwd.bar = 3,scale.res = c("Period"), node.method = "bar",col.age = adjustcolor( "navy", alpha.f = 0.5), cex.labels = 0.5,cex.tips = 0.5,ladderize.tree = T,pos.age=-6.5,abs.age.lwd.ticks=0,relative.height=0.02,cex.age = 0.6,label.timescale.names = T,burn.in = 0,no.margin=T,label.offset = 0.5)
 quartz.save("Fig1_drosoAB.pdf", type = "pdf",antialias=F,bg="white",dpi=400,pointsize=12)

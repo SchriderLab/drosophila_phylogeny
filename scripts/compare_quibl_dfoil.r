@@ -459,19 +459,24 @@ quartz.save("C6_C9_bc_bw.png", type = "png",antialias=F,bg="white",dpi=400,point
 dev.off()
 
 
-#####################################Time-introgression plot###############
+#####################################Time-introgression plot#########################################
 
 
 phy_mcmc=readMCMCtree("schemeA.tre")
 phy=phy_mcmc$apePhy
 tree_h=nodeheight(phy, node=159)
 age_v=c()
+node_v=c()
 for (i in 1:nrow(total_b))
 {
     age_pair=tree_h-findMRCA(phy,c(total_b[i,"i1_chi"],total_b[i,"i2_chi"]),type="height")
+    node_pair=findMRCA(phy,c(total_b[i,"i1_chi"],total_b[i,"i2_chi"]),type="node")
     age_v=c(age_v,age_pair)
+    node_v=c(node_v,node_pair)
 }    
 total_b$tmrca=age_v
+total_b$mrca=node_v
+
 
 
 for (cl in c("C1","C2","C3","C4","C5","C6","C7","C8","C9"))
@@ -485,6 +490,28 @@ for (cl in c("C1","C2","C3","C4","C5","C6","C7","C8","C9"))
     quartz.save(paste(cl,"_agedistr.png",sep=""), type = "png",antialias=F,bg="white",dpi=400,pointsize=12)
     dev.off()
 }
+
+#####################################Number of introgression events#########################################
+
+
+for (cl in c("C1","C2","C3","C4","C5","C6","C7","C8","C9"))
+{   
+    print(cl)
+    print(table(total_b[total_b$clade==cl & total_b$pass_chi==TRUE & total_b$pass_wilx==TRUE ,"mrca"]))
+}    
+
+
+cl=1
+quartz(width=6.5, height=5.5)
+for (cl_node in c(307,245,256,289,265,185,168,226,204))
+{   
+    plot(ladderize(extract.clade(phy,cl_node)),cex=0.8)
+    quartz.save(paste("C",cl,"_clade.png",sep=""), type = "png",antialias=F,bg="white",dpi=400,pointsize=12)
+    #dev.off()
+    cl=cl+1
+}    
+
+
 
 
 #####################################Plotting Compare######################
