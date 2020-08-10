@@ -311,24 +311,6 @@ total_q=total_q[total_q$common!="common",]
 #total_q=total_q[total_q$common!="discord1",]
 
 
-q1=get_intomatrix_blt(C1,total_q)
-q2=get_intomatrix_blt(C2,total_q)
-q3=get_intomatrix_blt(C3,total_q)
-q4=get_intomatrix_blt(C4,total_q)
-q5=get_intomatrix_blt(C5,total_q)
-q6=get_intomatrix_blt(C6,total_q)
-q7=get_intomatrix_blt(C7,total_q)
-q8=get_intomatrix_blt(C8,total_q)
-q9=get_intomatrix_blt(C9,total_q)
-
-
-quartz(width=12, height=9)
-grid.arrange(q1,q6,q2,q7,q3,q8,q4,q9,q5,ncol=2,nrow=5)
-quartz.save("C1_C9_quibl_bw.png", type = "png",antialias=F,bg="white",dpi=400,pointsize=12)
-dev.off()
-
-
-
 
 
 
@@ -365,8 +347,12 @@ b_chisq=get_intropair_blt_chisq(total_b)
 
 m_ch=b_chisq
 m_wilx=b_wilcox
+m_overlap=cbind(b_chisq[,1:2],b_chisq$pass=="TRUE" & b_wilcox$pass=="TRUE")
 names(b_wilcox)=c("i1_wilx","i2_wilx","pass_wilx","totalbl_pass")
 names(b_chisq)=c("i1_chi","i2_chi","pass_chi")
+names(m_overlap)=c("i1","i2","pass")
+
+
 
 total_b=cbind(total_b,b_chisq,b_wilcox)
 total_b$clade=ifelse(total_b$clade=="C1","C7",
@@ -378,7 +364,51 @@ total_b$clade=ifelse(total_b$clade=="C1","C7",
               ifelse(total_b$clade=="C7","C5",
               ifelse(total_b$clade=="C8","C4","C1"))))))))
 
-#Overlap Hypergeometric test 
+######################################Overlap Hypergeometric test##################################### 
+
+pair_name=apply(total_b[,c("i1_chi","i2_chi")],1,paste,collapse="_")
+total_b$pair_name=pair_name
+for (cl in c("C1","C2","C3","C4","C5","C6","C7","C8","C9"))
+{    
+    overl=0
+    sig_chi=0
+    sig_wilx=0
+    no_sig=0
+    a=total_b[total_b$clade==cl,]
+    for (p in unique(a$pair_name))
+    {
+        if (any(a$pair_name==p & a$pass_chi!="FALSE" & a$pass_wilx!="FALSE"))
+        {
+            overl=overl+1 
+        } else if (all(c(any(a$pair_name==p & a$pass_chi!="FALSE"),any(a$pair_name==p & a$pass_wilx!="FALSE")))) {
+            sig_chi=sig_chi+1
+            sig_wilx=sig_wilx+1
+        } else if (any(a$pair_name==p & a$pass_chi!="FALSE")) {
+            sig_chi=sig_chi+1
+        } else if (any(a$pair_name==p & a$pass_wilx!="FALSE")) {
+            sig_wilx=sig_wilx+1
+        } else {
+            no_sig=no_sig+1  
+        }    
+    }
+    tot=sig_chi+sig_wilx+2*overl+no_sig
+    tot_wilx=sig_wilx+overl
+    tot_chi=sig_chi+overl
+    print(cl)
+    hp=phyper(overl, tot_wilx, tot - tot_wilx, tot_chi, lower.tail = FALSE)
+    print(c(tot_chi-overl,overl,tot_wilx-overl,no_sig))
+    print(tot)
+    quartz(width=4, height=3.2)
+    plot(c(0.8,1.2),c(1,1),cex=15,xlim=c(0,2),main=paste("P = ",hp),xlab="",ylab="",axes=FALSE,frame.plot=TRUE)
+    text(1,1,overl)
+    text(0.55,1,tot_chi-overl)
+    text(1.45,1,tot_wilx-overl)
+    text(1.9,0.65,no_sig)
+    quartz.save(paste(cl,"_venn.pdf",sep=""), type = "pdf",antialias=F,bg="white",dpi=400,pointsize=12)
+    dev.off()
+}
+
+
 for (cl in c("C1","C2","C3","C4","C5","C6","C7","C8","C9"))
 {    
     a=total_b[total_b$clade==cl,]
@@ -387,9 +417,17 @@ for (cl in c("C1","C2","C3","C4","C5","C6","C7","C8","C9"))
     tot_chi=sum(as.numeric(a$pass_chi=="TRUE"))
     tot_wilx=sum(as.numeric(a$pass_wilx=="TRUE"))
     print(cl)
-    print(phyper(overl, tot_wilx, tot - tot_wilx, tot_chi, lower.tail = FALSE))
+    hp=phyper(overl, tot_wilx, tot - tot_wilx, tot_chi, lower.tail = FALSE)
     print(c(tot_chi-overl,overl,tot_wilx-overl,sum(as.numeric(a$pass_chi=="FALSE" & a$pass_wilx=="FALSE"))))
     print(tot)
+    quartz(width=4, height=3.2)
+    plot(c(0.8,1.2),c(1,1),cex=15,xlim=c(0,2),main=paste("P = ",hp),xlab="",ylab="",axes=FALSE,frame.plot=TRUE)
+    text(1,1,overl)
+    text(0.55,1,tot_chi-overl)
+    text(1.45,1,tot_wilx-overl)
+    text(1.9,0.65,sum(as.numeric(a$pass_chi=="FALSE" & a$pass_wilx=="FALSE")))
+    quartz.save(paste(cl,"_venn_alltrips.pdf",sep=""), type = "pdf",antialias=F,bg="white",dpi=400,pointsize=12)
+    dev.off()
 }
 
 hyper_subsample=function(tabl,size=9,cl)
@@ -429,35 +467,28 @@ for (cl in c("C1","C2","C3","C4","C5","C6","C7","C8","C9"))
 quartz.save("Power.pdf", type = "pdf",antialias=F,bg="white",dpi=400,pointsize=12)
 dev.off()
 
-bc1=get_intomatrix_blt(C1,m_ch)
-bc2=get_intomatrix_blt(C2,m_ch)
-bc3=get_intomatrix_blt(C3,m_ch)
-bc4=get_intomatrix_blt(C4,m_ch)
-bc5=get_intomatrix_blt(C5,m_ch)
-bc6=get_intomatrix_blt(C6,m_ch)
-bc7=get_intomatrix_blt(C7,m_ch)
-bc8=get_intomatrix_blt(C8,m_ch)
-bc9=get_intomatrix_blt(C9,m_ch)
 
-bw1=get_intomatrix_blt(C1,m_wilx)
-bw2=get_intomatrix_blt(C2,m_wilx)
-bw3=get_intomatrix_blt(C3,m_wilx)
-bw4=get_intomatrix_blt(C4,m_wilx)
-bw5=get_intomatrix_blt(C5,m_wilx)
-bw6=get_intomatrix_blt(C6,m_wilx)
-bw7=get_intomatrix_blt(C7,m_wilx)
-bw8=get_intomatrix_blt(C8,m_wilx)
-bw9=get_intomatrix_blt(C9,m_wilx)
+#####################################Printing pairwise introgression matrices#####################################
+print_save_matrix=function(clades,data,name)
+{
+    ids=1
+    for (cl in clades)
+    {
+       pair_m=get_intomatrix_blt(cl,data)
+       print(pair_m)
+       quartz.save(paste("C",ids,name,".pdf",sep=""), type = "pdf",antialias=F,bg="white",dpi=400,pointsize=12)
+       ids=ids+1  
+    }    
+}    
 
-quartz(width=12, height=9)
-grid.arrange(bc1,bw1,bc2,bw2,bc3,bw3,bc4,bw4,bc5,bw5,ncol=2,nrow=5)
-quartz.save("C1_C5_bc_bw.png", type = "png",antialias=F,bg="white",dpi=400,pointsize=12)
-dev.off()
-quartz(width=12, height=7.2)
-grid.arrange(bc6,bw6,bc7,bw7,bc8,bw8,bc9,bw9,ncol=2,nrow=4)
-quartz.save("C6_C9_bc_bw.png", type = "png",antialias=F,bg="white",dpi=400,pointsize=12)
-dev.off()
-
+#Agreement between BLT and Chi-square
+print_save_matrix(sp_space,m_overlap,"_blt_chi")
+#Chi-square
+print_save_matrix(sp_space,m_ch,"_chi")
+#BLT
+print_save_matrix(sp_space,m_wilx,"_blt")
+#QuibL
+print_save_matrix(sp_space,total_q,"_quibl")
 
 #####################################Time-introgression plot#########################################
 
@@ -476,6 +507,20 @@ for (i in 1:nrow(total_b))
 }    
 total_b$tmrca=age_v
 total_b$mrca=node_v
+
+
+#Time-introgression plot for the entire tree 
+all_a=total_b[,"tmrca"]
+sig_a=total_b[total_b$pass_chi==TRUE & total_b$pass_wilx==TRUE ,"tmrca"]
+d_a=data.frame(Age=c(all_a,sig_a),Distribution=c(rep("All",length(all_a)),rep("Sig.",length(sig_a))))
+quartz(width=6.5, height=4.3)
+ggplot(d_a, aes(x=Age, fill=Distribution))+geom_density(alpha=1,position = "stack")+scale_fill_manual(values=c("dodgerblue4", "gold"))+ geom_vline(xintercept = unique(sig_a),linetype="dashed", color = "red", size=1))
+
+
+
+
+
+
 
 
 
@@ -497,7 +542,10 @@ for (cl in c("C1","C2","C3","C4","C5","C6","C7","C8","C9"))
 for (cl in c("C1","C2","C3","C4","C5","C6","C7","C8","C9"))
 {   
     print(cl)
-    print(table(total_b[total_b$clade==cl & total_b$pass_chi==TRUE & total_b$pass_wilx==TRUE ,"mrca"]))
+    sig_mrca=total_b[total_b$clade==cl & total_b$pass_chi==TRUE & total_b$pass_wilx==TRUE ,"mrca"]
+    print(table(sig_mrca))
+    tot_mrca=total_b[total_b$clade==cl & total_b$mrca %in% sig_mrca ,"mrca"]
+    print(table(tot_mrca))
 }    
 
 
@@ -506,7 +554,7 @@ quartz(width=6.5, height=5.5)
 for (cl_node in c(307,245,256,289,265,185,168,226,204))
 {   
     plot(ladderize(extract.clade(phy,cl_node)),cex=0.8)
-    quartz.save(paste("C",cl,"_clade.png",sep=""), type = "png",antialias=F,bg="white",dpi=400,pointsize=12)
+    quartz.save(paste("C",cl,"_clade.pdf",sep=""), type = "pdf",antialias=F,bg="white",dpi=400,pointsize=12)
     #dev.off()
     cl=cl+1
 }    
