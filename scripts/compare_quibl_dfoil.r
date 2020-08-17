@@ -381,8 +381,7 @@ for (cl in c("C1","C2","C3","C4","C5","C6","C7","C8","C9"))
         {
             overl=overl+1 
         } else if (all(c(any(a$pair_name==p & a$pass_chi!="FALSE"),any(a$pair_name==p & a$pass_wilx!="FALSE")))) {
-            sig_chi=sig_chi+1
-            sig_wilx=sig_wilx+1
+            overl=overl+1
         } else if (any(a$pair_name==p & a$pass_chi!="FALSE")) {
             sig_chi=sig_chi+1
         } else if (any(a$pair_name==p & a$pass_wilx!="FALSE")) {
@@ -408,6 +407,60 @@ for (cl in c("C1","C2","C3","C4","C5","C6","C7","C8","C9"))
     dev.off()
 }
 
+hyper_subsample_uniq=function(tabl,size=8,cl)
+{
+    sub_tabl=tabl[tabl$clade==cl,]
+    sps=unique(c(sub_tabl$P1out,sub_tabl$P2out,sub_tabl$P3out))
+    p_vals=c()
+    for(i in 1:10000)
+    {
+        overl=0
+        sig_chi=0
+        sig_wilx=0
+        no_sig=0
+        sps_sub=sample(sps,size=size)
+        a=sub_tabl[sub_tabl$P1out %in% sps_sub & sub_tabl$P2out %in% sps_sub & sub_tabl$P3out %in% sps_sub,]
+        for (p in unique(a$pair_name))
+        {
+            if (any(a$pair_name==p & a$pass_chi!="FALSE" & a$pass_wilx!="FALSE"))
+            {
+                overl=overl+1 
+            } else if (all(c(any(a$pair_name==p & a$pass_chi!="FALSE"),any(a$pair_name==p & a$pass_wilx!="FALSE")))) {
+                overl=overl+1
+            } else if (any(a$pair_name==p & a$pass_chi!="FALSE")) {
+                sig_chi=sig_chi+1
+            } else if (any(a$pair_name==p & a$pass_wilx!="FALSE")) {
+                sig_wilx=sig_wilx+1
+            } else {
+                no_sig=no_sig+1  
+            }    
+        }
+        tot=sig_chi+sig_wilx+2*overl+no_sig
+        tot_wilx=sig_wilx+overl
+        tot_chi=sig_chi+overl
+        hp=phyper(overl, tot_wilx, tot - tot_wilx, tot_chi, lower.tail = FALSE)
+        p_vals=c(p_vals,hp)
+        
+    }    
+    return(p_vals)
+    
+}    
+
+quartz(width=7, height=7)
+par(mfrow=c(3,3))
+i=1
+for (cl in c("C1","C2","C3","C4","C5","C6","C7","C8","C9"))
+{ 
+    pval=hyper_subsample_uniq(total_b,8,cl)
+    n=round(sum(pval< 0.05 & pval!=0)/sum(pval!=0),digits=3)
+    
+    hist(log(pval),col="grey",xlab="",ylab="Frequency",prob=TRUE,main=paste("Clade ",i," (",n,")"),nclass=20)
+    abline(v=log(0.05),lty=3,col="red",lwd=2)
+    i=i+1
+}
+
+quartz.save("Power_uniq.pdf", type = "pdf",antialias=F,bg="white",dpi=400,pointsize=12)
+dev.off()
 
 for (cl in c("C1","C2","C3","C4","C5","C6","C7","C8","C9"))
 {    
@@ -430,7 +483,7 @@ for (cl in c("C1","C2","C3","C4","C5","C6","C7","C8","C9"))
     dev.off()
 }
 
-hyper_subsample=function(tabl,size=9,cl)
+hyper_subsample=function(tabl,size=8,cl)
 {
     sub_tabl=tabl[tabl$clade==cl,]
     sps=unique(c(sub_tabl$P1out,sub_tabl$P2out,sub_tabl$P3out))
@@ -518,12 +571,6 @@ ggplot(d_a, aes(x=Age, fill=Distribution))+geom_density(alpha=1,position = "stac
 
 
 
-
-
-
-
-
-
 for (cl in c("C1","C2","C3","C4","C5","C6","C7","C8","C9"))
 {    
     all_a=total_b[total_b$clade==cl,"tmrca"]
@@ -562,116 +609,3 @@ for (cl_node in c(307,245,256,289,265,185,168,226,204))
 
 
 
-#####################################Plotting Compare######################
-d1=get_intomatrix_dfoil(C1,total_d)
-d2=get_intomatrix_dfoil(C2,total_d)
-d3=get_intomatrix_dfoil(C3,total_d)
-d4=get_intomatrix_dfoil(C4,total_d)
-d5=get_intomatrix_dfoil(C5,total_d)
-d6=get_intomatrix_dfoil(C6,total_d)
-d7=get_intomatrix_dfoil(C7,total_d)
-d8=get_intomatrix_dfoil(C8,total_d)
-d9=get_intomatrix_dfoil(C9,total_d)
-
-q1=get_intomatrix_quibl(C1,total_q)
-q2=get_intomatrix_quibl(C2,total_q)
-q3=get_intomatrix_quibl(C3,total_q)
-q4=get_intomatrix_quibl(C4,total_q)
-q5=get_intomatrix_quibl(C5,total_q)
-q6=get_intomatrix_quibl(C6,total_q)
-q7=get_intomatrix_quibl(C7,total_q)
-q8=get_intomatrix_quibl(C8,total_q)
-q9=get_intomatrix_quibl(C9,total_q)
-
-
-bc1=get_intomatrix_blt(C1,b_chisq)
-bc2=get_intomatrix_blt(C2,b_chisq)
-bc3=get_intomatrix_blt(C3,b_chisq)
-bc4=get_intomatrix_blt(C4,b_chisq)
-bc5=get_intomatrix_blt(C5,b_chisq)
-bc6=get_intomatrix_blt(C6,b_chisq)
-bc7=get_intomatrix_blt(C7,b_chisq)
-bc8=get_intomatrix_blt(C8,b_chisq)
-bc9=get_intomatrix_blt(C9,b_chisq)
-
-bw1=get_intomatrix_blt(C1,b_wilcox)
-bw2=get_intomatrix_blt(C2,b_wilcox)
-bw3=get_intomatrix_blt(C3,b_wilcox)
-bw4=get_intomatrix_blt(C4,b_wilcox)
-bw5=get_intomatrix_blt(C5,b_wilcox)
-bw6=get_intomatrix_blt(C6,b_wilcox)
-bw7=get_intomatrix_blt(C7,b_wilcox)
-bw8=get_intomatrix_blt(C8,b_wilcox)
-bw9=get_intomatrix_blt(C9,b_wilcox)
-
-
-
-
-
-
-
-f=1
-for (cl in sp_space)
-{    
-    assign(paste("bw",f,sep=""),get_intomatrix_blt(cl,b_wilcox))
-    assign(paste("bwtrue",f,sep=""),get_intomatrix_blt(cl,b_wilcox[b_wilcox$totalbl_pass=="TRUE",]))
-    assign(paste("bwfalse",f,sep=""),get_intomatrix_blt(cl,b_wilcox[b_wilcox$totalbl_pass=="FALSE",]))
-    f=f+1
-}    
-
-grid.arrange(bw1,bwtrue1,bwfalse1,bw2,bwtrue2,bwfalse2,bw3,bwtrue3,bwfalse3,bw4,bwtrue4,bwfalse4,ncol=3,nrow=4)
-quartz.save("C1_C4_bw_split.png", type = "png",antialias=F,bg="white",dpi=400,pointsize=12)
-grid.arrange(bw5,bwtrue5,bwfalse5,bw6,bwtrue6,bwfalse6,bw7,bwtrue7,bwfalse7,bw8,bwtrue8,bwfalse8,bw9,bwtrue9,bwfalse9,ncol=3,nrow=5)
-quartz.save("C5_C9_bw_split.png", type = "png",antialias=F,bg="white",dpi=400,pointsize=12)
-
-
-
-
-
-qc1=get_intomatrix_quibl_s(C1,total_q)
-qc2=get_intomatrix_quibl_s(C2,total_q)
-qc3=get_intomatrix_quibl_s(C3,total_q)
-qc4=get_intomatrix_quibl_s(C4,total_q)
-qc5=get_intomatrix_quibl_s(C5,total_q)
-qc6=get_intomatrix_quibl_s(C6,total_q)
-qc7=get_intomatrix_quibl_s(C7,total_q)
-qc8=get_intomatrix_quibl_s(C8,total_q)
-qc9=get_intomatrix_quibl_s(C9,total_q)
-
-b1=get_intomatrix_blt(C1,total_b)
-b2=get_intomatrix_blt(C2,total_b)
-b3=get_intomatrix_blt(C3,total_b)
-b4=get_intomatrix_blt(C4,total_b)
-b5=get_intomatrix_blt(C5,total_b)
-b6=get_intomatrix_blt(C6,total_b)
-b7=get_intomatrix_blt(C7,total_b)
-b8=get_intomatrix_blt(C8,total_b)
-b9=get_intomatrix_blt(C9,total_b)
-
-
-
-
-
-
-quartz(width=12, height=9)
-grid.arrange(bc1,bw1,bc2,bw2,bc3,bw3,bc4,bw4,bc5,bw5,ncol=2,nrow=5)
-quartz.save("C1_C5_bc_bw.png", type = "png",antialias=F,bg="white",dpi=400,pointsize=12)
-dev.off()
-quartz(width=12, height=7.2)
-grid.arrange(bc6,bw6,bc7,bw7,bc8,bw8,bc9,bw9,ncol=2,nrow=4)
-quartz.save("C6_C9_bc_bw.png", type = "png",antialias=F,bg="white",dpi=400,pointsize=12)
-dev.off()
-
-
-grid.arrange(b1,b2,b3,b4,ncol=1,nrow=4)
-quartz.save("C1_C4_blt.png", type = "png",antialias=F,bg="white",dpi=400,pointsize=12)
-grid.arrange(b5,b6,b7,b8,b9,ncol=1,nrow=5)
-quartz.save("C5_C9_blt.png", type = "png",antialias=F,bg="white",dpi=400,pointsize=12)
-
-
-
-grid.arrange(d1,q1,qc1,b1,d2,q2,qc2,b2,d3,q3,qc3,b3,d4,q4,qc4,b4,ncol=4,nrow=4)
-grid.arrange(d5,q5,qc5,b5,d6,q6,qc6,b6,d7,q7,qc7,b7,d8,q8,qc8,b8,d9,q9,qc9,b9,ncol=4,nrow=5)
-
-quartz.save("C1_C4_dfoil_quibl.png", type = "png",antialias=F,bg="white",dpi=400,pointsize=12)
-quartz.save("C5_C9_dfoil_quibl.png", type = "png",antialias=F,bg="white",dpi=400,pointsize=12)
