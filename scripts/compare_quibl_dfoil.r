@@ -368,6 +368,109 @@ total_b$clade=ifelse(total_b$clade=="C1","C7",
 
 pair_name=apply(total_b[,c("i1_chi","i2_chi")],1,paste,collapse="_")
 total_b$pair_name=pair_name
+
+#Stringent unique introgression (main figure)
+for (cl in c("C1","C2","C3","C4","C5","C6","C7","C8","C9"))
+{    
+    overl=0
+    sig_chi=0
+    sig_wilx=0
+    no_sig=0
+    a=total_b[total_b$clade==cl,]
+    for (p in unique(a$pair_name))
+    {
+        if (any(a$pair_name==p & a$pass_chi!="FALSE" & a$pass_wilx!="FALSE"))
+        {
+            overl=overl+1 
+        } else if (all(c(any(a$pair_name==p & a$pass_chi!="FALSE"),any(a$pair_name==p & a$pass_wilx!="FALSE")))) {
+            sig_chi=sig_chi+1
+            sig_wilx=sig_wilx+1
+        } else if (any(a$pair_name==p & a$pass_chi!="FALSE")) {
+            sig_chi=sig_chi+1
+        } else if (any(a$pair_name==p & a$pass_wilx!="FALSE")) {
+            sig_wilx=sig_wilx+1
+        } else {
+            no_sig=no_sig+1  
+        }    
+    }
+    tot=sig_chi+sig_wilx+2*overl+no_sig
+    tot_wilx=sig_wilx+overl
+    tot_chi=sig_chi+overl
+    print(cl)
+    hp=phyper(overl, tot_wilx, tot - tot_wilx, tot_chi, lower.tail = FALSE)
+    print(c(tot_chi-overl,overl,tot_wilx-overl,no_sig))
+    print(tot)
+    quartz(width=4, height=3.2)
+    plot(c(0.8,1.2),c(1,1),cex=15,xlim=c(0,2),main=paste("P = ",hp),xlab="",ylab="",axes=FALSE,frame.plot=TRUE)
+    text(1,1,overl)
+    text(0.55,1,tot_chi-overl)
+    text(1.45,1,tot_wilx-overl)
+    text(1.9,0.65,no_sig)
+    quartz.save(paste(cl,"_vennstringentoverlap_uniq.pdf",sep=""), type = "pdf",antialias=F,bg="white",dpi=400,pointsize=12)
+    dev.off()
+}
+
+
+
+#Stringent unique introgression power test
+hyper_subsample_uniq=function(tabl,size=8,cl)
+{
+    sub_tabl=tabl[tabl$clade==cl,]
+    sps=unique(c(sub_tabl$P1out,sub_tabl$P2out,sub_tabl$P3out))
+    p_vals=c()
+    for(i in 1:10000)
+    {
+        overl=0
+        sig_chi=0
+        sig_wilx=0
+        no_sig=0
+        sps_sub=sample(sps,size=size)
+        a=sub_tabl[sub_tabl$P1out %in% sps_sub & sub_tabl$P2out %in% sps_sub & sub_tabl$P3out %in% sps_sub,]
+        for (p in unique(a$pair_name))
+        {
+            if (any(a$pair_name==p & a$pass_chi!="FALSE" & a$pass_wilx!="FALSE"))
+            {
+                overl=overl+1 
+            } else if (all(c(any(a$pair_name==p & a$pass_chi!="FALSE"),any(a$pair_name==p & a$pass_wilx!="FALSE")))) {
+                sig_chi=sig_chi+1
+                sig_wilx=sig_wilx+1
+            } else if (any(a$pair_name==p & a$pass_chi!="FALSE")) {
+                sig_chi=sig_chi+1
+            } else if (any(a$pair_name==p & a$pass_wilx!="FALSE")) {
+                sig_wilx=sig_wilx+1
+            } else {
+                no_sig=no_sig+1  
+            }    
+        }
+        tot=sig_chi+sig_wilx+2*overl+no_sig
+        tot_wilx=sig_wilx+overl
+        tot_chi=sig_chi+overl
+        hp=phyper(overl, tot_wilx, tot - tot_wilx, tot_chi, lower.tail = FALSE)
+        p_vals=c(p_vals,hp)
+        
+    }    
+    return(p_vals)
+    
+}    
+
+quartz(width=3, height=27)
+par(mfrow=c(9,1))
+i=1
+for (cl in c("C1","C2","C3","C4","C5","C6","C7","C8","C9"))
+{ 
+    pval=hyper_subsample_uniq(total_b,8,cl)
+    n=round(sum(pval< 0.05 & pval!=0)/sum(pval!=0),digits=3)
+    
+    hist(log(pval),col="grey",xlab="",ylab="Frequency",prob=TRUE,main=paste("Clade ",i," (",n,")"),nclass=20)
+    abline(v=log(0.05),lty=3,col="red",lwd=2)
+    i=i+1
+}
+
+quartz.save("Power_uniqstringent.pdf", type = "pdf",antialias=F,bg="white",dpi=400,pointsize=12)
+dev.off()
+
+
+#Relaxed unique introgression 
 for (cl in c("C1","C2","C3","C4","C5","C6","C7","C8","C9"))
 {    
     overl=0
@@ -403,11 +506,14 @@ for (cl in c("C1","C2","C3","C4","C5","C6","C7","C8","C9"))
     text(0.55,1,tot_chi-overl)
     text(1.45,1,tot_wilx-overl)
     text(1.9,0.65,no_sig)
-    quartz.save(paste(cl,"_venn.pdf",sep=""), type = "pdf",antialias=F,bg="white",dpi=400,pointsize=12)
+    quartz.save(paste(cl,"_vennrelaxedoverlap_uniq.pdf",sep=""), type = "pdf",antialias=F,bg="white",dpi=400,pointsize=12)
     dev.off()
 }
 
-hyper_subsample_uniq=function(tabl,size=8,cl)
+
+
+#Relaxed unique introgression power test
+hyper_subsample_uniqrelaxed=function(tabl,size=8,cl)
 {
     sub_tabl=tabl[tabl$clade==cl,]
     sps=unique(c(sub_tabl$P1out,sub_tabl$P2out,sub_tabl$P3out))
@@ -446,12 +552,12 @@ hyper_subsample_uniq=function(tabl,size=8,cl)
     
 }    
 
-quartz(width=7, height=7)
-par(mfrow=c(3,3))
+quartz(width=3, height=27)
+par(mfrow=c(9,1))
 i=1
 for (cl in c("C1","C2","C3","C4","C5","C6","C7","C8","C9"))
 { 
-    pval=hyper_subsample_uniq(total_b,8,cl)
+    pval=hyper_subsample_uniqrelaxed(total_b,8,cl)
     n=round(sum(pval< 0.05 & pval!=0)/sum(pval!=0),digits=3)
     
     hist(log(pval),col="grey",xlab="",ylab="Frequency",prob=TRUE,main=paste("Clade ",i," (",n,")"),nclass=20)
@@ -459,9 +565,12 @@ for (cl in c("C1","C2","C3","C4","C5","C6","C7","C8","C9"))
     i=i+1
 }
 
-quartz.save("Power_uniq.pdf", type = "pdf",antialias=F,bg="white",dpi=400,pointsize=12)
+quartz.save("Power_uniqrelaxed.pdf", type = "pdf",antialias=F,bg="white",dpi=400,pointsize=12)
 dev.off()
 
+
+
+#Introgression all triplets
 for (cl in c("C1","C2","C3","C4","C5","C6","C7","C8","C9"))
 {    
     a=total_b[total_b$clade==cl,]
@@ -505,8 +614,10 @@ hyper_subsample=function(tabl,size=8,cl)
     
 }    
 
-quartz(width=7, height=7)
-par(mfrow=c(3,3))
+
+#Introgression power test all triplets
+quartz(width=3, height=27)
+par(mfrow=c(9,1))
 i=1
 for (cl in c("C1","C2","C3","C4","C5","C6","C7","C8","C9"))
 { 
@@ -517,7 +628,7 @@ for (cl in c("C1","C2","C3","C4","C5","C6","C7","C8","C9"))
     abline(v=log(0.05),lty=3,col="red",lwd=2)
     i=i+1
 }
-quartz.save("Power.pdf", type = "pdf",antialias=F,bg="white",dpi=400,pointsize=12)
+quartz.save("Power_alltriplets.pdf", type = "pdf",antialias=F,bg="white",dpi=400,pointsize=12)
 dev.off()
 
 
