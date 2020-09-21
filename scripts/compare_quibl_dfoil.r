@@ -337,10 +337,10 @@ total_d=cbind(total_d,get_intropair_dfoil(total_d))
 names_vb=c("clade","P1out","P2out","P3out","CountP1","CountP2","CountP3","PvalueChi","meanT_concord","meanT_discord1","meanT_discord2","PvalueWCOMC1","PvalueWCOMC2","PvalueWC1C2")
 total_b=read.csv("droso_blt_results.txt",stringsAsFactors=FALSE,header=F)
 names(total_b)=names_vb
-total_b$PvalueChi=p.adjust(total_b$PvalueChi,method="fdr")
-total_b$PvalueWCOMC1=p.adjust(total_b$PvalueWCOMC1,method="fdr") 
-total_b$PvalueWCOMC2=p.adjust(total_b$PvalueWCOMC2,method="fdr") 
-total_b$PvalueWC1C2=p.adjust(total_b$PvalueWC1C2,method="fdr") 
+#total_b$PvalueChi=p.adjust(total_b$PvalueChi,method="fdr")
+#total_b$PvalueWCOMC1=p.adjust(total_b$PvalueWCOMC1,method="fdr") 
+#total_b$PvalueWCOMC2=p.adjust(total_b$PvalueWCOMC2,method="fdr") 
+#total_b$PvalueWC1C2=p.adjust(total_b$PvalueWC1C2,method="fdr") 
 
 b_wilcox=get_intropair_blt_wilcox(total_b)
 b_chisq=get_intropair_blt_chisq(total_b)
@@ -648,9 +648,9 @@ print_save_matrix=function(clades,data,name)
 #Agreement between BLT and Chi-square
 print_save_matrix(sp_space,m_overlap,"_blt_chi")
 #Chi-square
-print_save_matrix(sp_space,m_ch,"_chi")
+print_save_matrix(sp_space,m_ch,"_chi_nofdr")
 #BLT
-print_save_matrix(sp_space,m_wilx,"_blt")
+print_save_matrix(sp_space,m_wilx,"_blt_nofdr")
 #QuibL
 print_save_matrix(sp_space,total_q,"_quibl")
 
