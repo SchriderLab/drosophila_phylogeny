@@ -72,18 +72,18 @@ clade7=c('D_acanthoptera','D_wassermani','D_pachea','D_nannoptera','D_bromeliae'
 clade8=c('Z_africanus','Z_gabonicus','Z_indianus_16GNV01','Z_camerounensis','Z_nigranus','Z_lachaisei','Z_vittiger','Z_capensis','Z_davidi','Z_taronus','Z_ornatusmayotte','Z_ghesquierei','Z_inermis','Z_kolodkinae','Z_sepsoides_mayotte','Z_tsacasi','Z_tuberculatus')
 clade9=c('D_quadrilineata','D_arawakana','D_dunni','D_cardini','D_ornatifrons','D_subbadia','D_pallidipennis','D_funebris','D_guttifera','D_innubila','D_mush_saotome','D_albomicans','D_nasuta','D_kepulauana','D_neonasuta','D_sulfurigaster_albostrigata','D_pulaua','D_sulfurigaster_bilimbata','D_sulfurigaster_sulfurigaster','D_neohypocausta','D_immigrans','D_immigrans_kari17','D_pruinosa')
 
-for (ret in 0:5)
+for (ret in 1:5)
 
 {
-    phylonet_chunk_topo("MLrooted.tre","gene_trees_wboot_dna_mafft",clade1,ret,15)
-    phylonet_chunk_topo("MLrooted.tre","gene_trees_wboot_dna_mafft",clade2,ret,15)
-    phylonet_chunk_topo("MLrooted.tre","gene_trees_wboot_dna_mafft",clade3,ret,15)
-    phylonet_chunk_topo("MLrooted.tre","gene_trees_wboot_dna_mafft",clade4,ret,15)
-    phylonet_chunk_topo("MLrooted.tre","gene_trees_wboot_dna_mafft",clade5,ret,15)
-    phylonet_chunk_topo("MLrooted.tre","gene_trees_wboot_dna_mafft",clade6,ret,15)
-    phylonet_chunk_topo("MLrooted.tre","gene_trees_wboot_dna_mafft",clade7,ret,15)
-    phylonet_chunk_topo("MLrooted.tre","gene_trees_wboot_dna_mafft",clade8,ret,15)
-    phylonet_chunk_topo("MLrooted.tre","gene_trees_wboot_dna_mafft",clade9,ret,15)
+    phylonet_chunk_topo("MLrooted.tre","gene_trees_wboot_dna_mafft",clade1,ret,5)
+    phylonet_chunk_topo("MLrooted.tre","gene_trees_wboot_dna_mafft",clade2,ret,5)
+    phylonet_chunk_topo("MLrooted.tre","gene_trees_wboot_dna_mafft",clade3,ret,5)
+    phylonet_chunk_topo("MLrooted.tre","gene_trees_wboot_dna_mafft",clade4,ret,5)
+    phylonet_chunk_topo("MLrooted.tre","gene_trees_wboot_dna_mafft",clade5,ret,5)
+    phylonet_chunk_topo("MLrooted.tre","gene_trees_wboot_dna_mafft",clade6,ret,5)
+    phylonet_chunk_topo("MLrooted.tre","gene_trees_wboot_dna_mafft",clade7,ret,5)
+    phylonet_chunk_topo("MLrooted.tre","gene_trees_wboot_dna_mafft",clade8,ret,5)
+    phylonet_chunk_topo("MLrooted.tre","gene_trees_wboot_dna_mafft",clade9,ret,5)
 }
 
 
