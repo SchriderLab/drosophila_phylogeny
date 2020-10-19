@@ -55,7 +55,7 @@ iqtree -s [supermatrix.aln] -nt 15 -m GTR+I+G -bb 1000 -pre ML -safe -bb 1000 -a
 ```
 :red_circle: **ASTRAL phylogenetic inference using [ASTRAL](https://github.com/smirarab/ASTRAL) v5.6.3**
 ```bash
-java -jar ~/soft/ASTRAL/Astral/astral.5.6.3.jar -i [gene_trees] -t 3
+java -jar astral.5.6.3.jar -i [gene_trees] -t 3
 ```
 :red_circle: **Generation of CODON MSAs using [PRANK](http://wasabiapp.org/software/prank/) v.170427 with minimal SLURM requirements**
 
