@@ -51,7 +51,7 @@ python2.7 geneSticher.py -in *.aln
 
 #SBATCH --time=100:00:00 --ntasks=15 --nodes=1 --mem-per-cpu=10G
 ```bash
-iqtree -s [supermatrix.aln] -nt 15 -m GTR+I+G -bb 1000 -pre ML -safe -bb 1000 -alrt 1000 -abayes
+iqtree -s [supermatrix.aln] -nt 15 -m GTR+I+G -pre ML -safe -bb 1000 -alrt 1000 -abayes
 ```
 :red_circle: **ASTRAL phylogenetic inference using [ASTRAL](https://github.com/smirarab/ASTRAL) v5.6.3**
 ```bash
