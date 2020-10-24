@@ -8,7 +8,6 @@ test_triplet=function(taxa,gene_trees,clade_name)
 {
     busco_len=gene_trees[,1:2]
     gene_trees=read.tree(text=gene_trees[,"V3"]) 
-    
     trl_all=c()
     brls_all1=c()
     brls_all2=c()
@@ -22,9 +21,10 @@ test_triplet=function(taxa,gene_trees,clade_name)
     {
         
         ind=ind+1
-        if("Anopheles_gambiae" %in% tre$tip.label & all(taxa %in% tre$tip.label))
+        if("M_domestica" %in% tre$tip.label & all(taxa %in% tre$tip.label))
         {
             
+            tre=root(tre,"M_domestica")
             trl=sum(tre$edge.length)
             tre_trip=keep.tip(tre,taxa)
             brls=extract.clade(tre_trip,max(tre_trip$edge))$edge.length
@@ -38,9 +38,13 @@ test_triplet=function(taxa,gene_trees,clade_name)
             busco_id_all=c(busco_id_all,busco_len[ind,1])
             aln_length_all=c(aln_length_all,busco_len[ind,2])
             
+           
         }    
-    }    
-    m=data.frame(busco_id=busco_id_all,aln_l=aln_length_all,brl1=brls_all1,brl2=brls_all2,trl=trl_all,brl_out=out_all,brl_int=internal_all,root_tip=root_tip_all)
+    }
+    counts=table(root_tip_all)
+    con=names(which.max(counts))
+    dis=names(which.min(counts))
+    m=data.frame(brl1=brls_all1,brl2=brls_all2,trl=trl_all,brl_out=out_all,brl_int=internal_all,root_tip=root_tip_all,topo=ifelse(root_tip_all %in% con,"concord",ifelse(root_tip_all %in% dis,"discord2","discord1")))
     write.table(m,paste(c(taxa,"csv"),collapse="."),quote=F,row.names=F)
     if(!any(table(m$root_tip)==0) & length(table(m$root_tip))==3)
     {
