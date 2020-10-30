@@ -641,9 +641,9 @@ print_save_matrix=function(clades,data,name)
 #Agreement between BLT and Chi-square
 print_save_matrix(sp_space,m_overlap,"_blt_chi")
 #Chi-square
-print_save_matrix(sp_space,m_ch,"_chi_nofdr")
+print_save_matrix(sp_space,m_ch,"_chi")
 #BLT
-print_save_matrix(sp_space,m_wilx,"_blt_nofdr")
+print_save_matrix(sp_space,m_wilx,"_blt")
 #QuibL
 print_save_matrix(sp_space,total_q,"_quibl")
 
