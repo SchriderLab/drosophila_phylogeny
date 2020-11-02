@@ -44,4 +44,8 @@ all_retictrees=function(retic_trees,gene_trees,dir_name)
     setwd("..")
 }    
 
-all_retictrees("/Users/anton/Desktop/data/droso_project/clade2_scorenets.txt","/Users/anton/Desktop/data/droso_project/gene_trees_wboot_dna_mafft","clade2_score")
+all_retictrees("/Users/anton/Desktop/data/droso_project/netsC2_score_nets.txt","/Users/anton/Desktop/data/droso_project/gene_trees_wboot_dna_mafft","clade2_score")
+all_retictrees("/Users/anton/Desktop/data/droso_project/netsC4_score_nets.txt","/Users/anton/Desktop/data/droso_project/gene_trees_wboot_dna_mafft","clade4_score")
+all_retictrees("/Users/anton/Desktop/data/droso_project/netsC6_score_nets.txt","/Users/anton/Desktop/data/droso_project/gene_trees_wboot_dna_mafft","clade6_score")
+all_retictrees("/Users/anton/Desktop/data/droso_project/netsC8_score_nets.txt","/Users/anton/Desktop/data/droso_project/gene_trees_wboot_dna_mafft","clade8_score")
+all_retictrees("/Users/anton/Desktop/data/droso_project/netsC9_score_nets.txt","/Users/anton/Desktop/data/droso_project/gene_trees_wboot_dna_mafft","clade9_score")
