@@ -93,3 +93,14 @@ net_combn(c7,"netsC7")
 net_combn(c8,"netsC8")
 net_combn(c9,"netsC9")
 
+#################################################Top 5#####################
+gett=function(nets)
+{
+    n1=read.csv(nets,header=F,sep="")
+    netlog=n1[which.max(n1$V5),c("V1","V5")]
+    cat(unlist(netlog))
+    net=read.evonet(text=netlog$V1)
+    net$edge.length=NULL
+    cat(write.evonet(net))
+}    
+
