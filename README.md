@@ -57,16 +57,6 @@ iqtree -s [supermatrix.aln] -nt 15 -m GTR+I+G -pre ML -safe -bb 1000 -alrt 1000 
 ```bash
 java -jar astral.5.6.3.jar -i [gene_trees] -t 3
 ```
-:red_circle: **Generation of CODON MSAs using [PRANK](http://wasabiapp.org/software/prank/) v.170427 with minimal SLURM requirements**
-
-1) Ectract CDS from BUSCO-extracted DNA sequences in fasta that correspond to BUSCO-translated Protein sequences with [dna2cds_busco.py](https://github.com/SchriderLab/drosophila_phylogeny/blob/master/scripts/dna2cds_busco.py)
-```bash
-dna2cds_busco.py -p [in_fasta] 
-```
-2) Align 
-```bash
-prank -codon -F -d=[in_fasta] -o=[out_fasta]
-```
 
 
 
