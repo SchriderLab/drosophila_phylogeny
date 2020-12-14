@@ -1,12 +1,12 @@
 library("ape")
-library('ggplot2')
-library('pals')
-library('reshape2')
-library('dplyr')
-library('gridExtra')
+library("ggplot2")
+library("pals")
+library("reshape2")
+library("dplyr")
+library("gridExtra")
 library("svMisc")
 library("MCMCtreeR")
-library('phytools')
+library("phytools")
 
 #Identify introgressing taxa pair from QuiBL result
 get_intropair=function(m)
@@ -25,140 +25,6 @@ get_intropair=function(m)
     return(pair_v)
 }
 
-# Plot matrix from QuiBL results 
-get_intomatrix_quibl=function(taxa,dat)
-{
-    m=matrix(0, nrow=length(taxa),ncol=length(taxa)) 
-    m=data.frame(m)
-    colnames(m)=taxa
-    rownames(m)=taxa
-    dat_int=dat[dat$sig==TRUE & dat$common==FALSE & (dat$i1 %in% taxa | dat$i2 %in% taxa ),c("i1","i2")]
-    for (i in 1:nrow(dat_int))
-    {
-        a=dat_int[i,"i1"]
-        b=dat_int[i,"i2"]
-        m[rownames(m)==a,colnames(m)==b]=m[rownames(m)==a,colnames(m)==b]+1
-    }    
-    m=m+t(m)
-    m[upper.tri(m)]=NA
-    melted_m=melt(as.matrix(m),na.rm = TRUE)
-    #Normalazing by the triplets that contain an introgressing pair (= Ntaxa-2)
-    melted_m$value=melted_m$value/(length(taxa)-2)
-   
-    g1=ggplot(melted_m, aes(Var2, Var1, fill = value))+geom_tile(color = "white")+scale_fill_gradientn(colors=jet(100),space = "Lab", name="N significant triplets/\nN triplets cointaining introgressing taxa") +theme_minimal()+theme(axis.title.x=element_blank(),axis.text.x=element_blank(),axis.ticks.x=element_blank())+coord_fixed()+labs(x="",y="")
-    return(g1)
-}    
-
-
-# Plot matrix from QuiBL counts results 
-get_intomatrix_quibl_c=function(taxa,dat)
-{
-    m=matrix(0, nrow=length(taxa),ncol=length(taxa)) 
-    m=data.frame(m)
-    colnames(m)=taxa
-    rownames(m)=taxa
-    dat_int=dat[dat$sig==TRUE & dat$common==FALSE & (dat$i1 %in% taxa | dat$i2 %in% taxa ),c("i1","i2","count")]
-    for (i in 1:nrow(dat_int))
-    {
-        a=dat_int[i,"i1"]
-        b=dat_int[i,"i2"]
-        m[rownames(m)==a,colnames(m)==b]=m[rownames(m)==a,colnames(m)==b]+dat_int[i,"count"]
-    }    
-    m=m+t(m)
-    m[upper.tri(m)]=NA
-    melted_m=melt(as.matrix(m),na.rm = TRUE)
-    #Normalazing by the triplets that contain an introgressing pair (= Ntaxa-2)
-    melted_m$value=melted_m$value/(length(taxa)-2)
-    g1=ggplot(melted_m, aes(Var2, Var1, fill = value))+geom_tile(color = "white")+scale_fill_gradientn(colors=jet(100),space = "Lab", name="Introgression discordant counts") +theme_minimal()+theme(axis.title.x=element_blank(),axis.text.x=element_blank(),axis.ticks.x=element_blank())+coord_fixed()+labs(x="",y="")
-    return(g1)
-}    
-
-# Plot matrix from QuiBL chi-square results 
-get_intomatrix_quibl_s=function(taxa,dat)
-{
-    m=matrix(0, nrow=length(taxa),ncol=length(taxa)) 
-    m=data.frame(m)
-    colnames(m)=taxa
-    rownames(m)=taxa
-    dat_int=dat[dat$Qsig==TRUE & dat$common==FALSE & (dat$i1 %in% taxa | dat$i2 %in% taxa ),c("i1","i2")]
-    for (i in 1:nrow(dat_int))
-    {
-        a=dat_int[i,"i1"]
-        b=dat_int[i,"i2"]
-        m[rownames(m)==a,colnames(m)==b]=m[rownames(m)==a,colnames(m)==b]+1
-    }    
-    m=m+t(m)
-    m[upper.tri(m)]=NA
-    melted_m=melt(as.matrix(m),na.rm = TRUE)
-    #Normalazing by the triplets that contain an introgressing pair (= Ntaxa-2)
-    melted_m$value=melted_m$value/(length(taxa)-2)
-    g1=ggplot(melted_m, aes(Var2, Var1, fill = value))+geom_tile(color = "white")+scale_fill_gradientn(colors=jet(100),space = "Lab", name="N significant triplets/\nN triplets cointaining introgresing taxa") +theme_minimal()+theme(axis.title.x=element_blank(),axis.text.x=element_blank(),axis.ticks.x=element_blank())+coord_fixed()+labs(x="",y="")
-    return(g1)
-}    
-
-
-
-#Identify introgressing taxa pair from Dfoil result
-get_intropair_dfoil=function(m)
-{
-    pair_v=rbind()
-    for (i in 1:nrow(m))
-    {
-        progress(i,nrow(m))
-        if(m[i,"introgression"]!="none" & m[i,"introgression"]!="123" & m[i,"introgression"]!="124")
-        {
-            pair=as.character(unlist(m[i,c("P1","P2","P3","P4")][sort(as.numeric(unlist(strsplit(as.character(m[i,"introgression"]),split=""))))]))
-            pair_v=rbind(pair_v,pair)
-        }else{
-            pair=c("none","none")
-            pair_v=rbind(pair_v,pair)
-        }    
-    }
-    pair_v=data.frame(pair_v)
-    names(pair_v)=c("i1","i2")
-    rownames(pair_v) = c()
-    return(pair_v)
-}
-
-# Plot matrix from Dfoil results 
-get_intomatrix_dfoil=function(taxa,dat)
-{
-    m=matrix(0, nrow=length(taxa),ncol=length(taxa)) 
-    m=data.frame(m)
-    colnames(m)=taxa
-    rownames(m)=taxa
-    total_pairs=rbind(as.matrix(dat[,c("P1","P4")]),as.matrix(dat[,c("P1","P3")]),as.matrix(dat[,c("P2","P3")]),as.matrix(dat[,c("P2","P4")]))
-    total_pairs=data.frame(total_pairs)
-    names(total_pairs)=c("i1","i2")
-    total_pairs=apply(total_pairs,2,as.character)
-    dat_int=dat[dat$introgression!="none" & (dat$i1 %in% taxa | dat$i2 %in% taxa),c("i1","i2")]
-    if (nrow(dat_int)!=0)
-    {
-        for (i in 1:nrow(dat_int))
-        {
-            a=dat_int[i,"i1"]
-            b=dat_int[i,"i2"]
-            m[rownames(m)==a,colnames(m)==b]=m[rownames(m)==a,colnames(m)==b]+1
-        }    
-    }    
-    
-    m=m+t(m)
-    m[upper.tri(m)]=NA
-    melted_m=melt(as.matrix(m),na.rm = TRUE)
-    for (n in 1:nrow(melted_m))
-    {
-        if (melted_m[n,"value"]!=0)
-        {
-            f=nrow(total_pairs[(total_pairs[,"i1"]==as.character(melted_m[n,"Var1"]) &  total_pairs[,"i2"]==as.character(melted_m[n,"Var2"])) | (total_pairs[,"i2"]==as.character(melted_m[n,"Var1"]) &  total_pairs[,"i1"]==as.character(melted_m[n,"Var2"])),])
-            
-            melted_m[n,"value"]=melted_m[n,"value"]/f
-        }    
-        
-    }
-    
-    g1=ggplot(melted_m, aes(Var2, Var1, fill = value))+geom_tile(color = "white")+scale_fill_gradientn(colors=jet(100),space = "Lab", name="N significant quintets/\nN quintets cointaining introgressing taxa") +theme_minimal()+theme(axis.title.x=element_blank(),axis.text.x=element_blank(),axis.ticks.x=element_blank())+coord_fixed()+labs(x="",y="")
-    return(g1)
-}    
 
 #Identify introgressing taxa pair from BLT result 
 get_intropair_blt_wilcox=function(m)
@@ -166,7 +32,7 @@ get_intropair_blt_wilcox=function(m)
     pair_v=rbind()
     for (i in 1:nrow(m))
     {
-        progress(i,nrow(m))
+        
         pair=as.character(m[i,c("P1out","P2out","P3out")][which(rank(m[i,c("CountP1","CountP2","CountP3")],ties.method = "random")!=2)])
         if(m[i,"PvalueWC1C2"]<0.05)
         {
@@ -190,13 +56,13 @@ get_intropair_blt_wilcox=function(m)
     return(pair_v)
 }
 
-
+#Identify introgressing taxa pair from DCT result 
 get_intropair_blt_chisq=function(m)
 {
     pair_v=rbind()
     for (i in 1:nrow(m))
     {
-        progress(i,nrow(m))
+        
         pair=as.character(m[i,c("P1out","P2out","P3out")][which(rank(m[i,c("CountP1","CountP2","CountP3")],ties.method = "random")!=2)])
         if(m[i,"PvalueChi"]<0.05)
         {
@@ -248,13 +114,9 @@ get_intomatrix_blt=function(taxa,dat,sig)
     return(g1)
 }    
 
-
-
-
-#################################################################### QuiBL ##############################################################
+#################################################################### Define Clades #######################################################
 
 tt=read.tree("MLrooted.tre")
-
 
 C7=extract.clade(tt,168)$tip.label
 C6=extract.clade(tt,185)$tip.label
@@ -267,9 +129,7 @@ C4=extract.clade(tt,289)$tip.label
 C1=extract.clade(tt,307)$tip.label
 
 sp_space=list(C1,C2,C3,C4,C5,C6,C7,C8,C9)
-
-
-
+#################################################################### QuiBL ##############################################################
 
 total_q=read.csv("droso_quibl_results.txt",header=F,stringsAsFactors=F)
 names(total_q)=c("clade","id","P1","P2","P3","outgroup","Com1","Com2","mixprop1","mixprop2","lambda2Dist","lambda1Dist","BIC2Dist","BIC1Dist","count")
@@ -280,7 +140,6 @@ total_q$triplet=as.character(apply(total_q[,c("P1","P2","P3")],1,paste,collapse=
 total_q=cbind(total_q,get_intropair(total_q))
 total_q$BICdiff = total_q$BIC2-total_q$BIC1
 total_q$pass=total_q$BICdiff < -30 
-
 
 total_q$clade=ifelse(total_q$clade=="C1","C7",
               ifelse(total_q$clade=="C2","C6",
@@ -310,10 +169,6 @@ total_q=total_q[complete.cases(total_q$pass),]
 total_q=total_q[total_q$common!="common",]
 #total_q=total_q[total_q$common!="discord1",]
 
-
-
-
-
 #################################################################### Dfoil ##############################################################
 
 
@@ -333,7 +188,6 @@ total_d=cbind(total_d,get_intropair_dfoil(total_d))
 
 
 #################################################################### Branch Length Test ################################################
-
 names_vb=c("clade","P1out","P2out","P3out","CountP1","CountP2","CountP3","PvalueChi","meanT_concord","meanT_discord1","meanT_discord2","PvalueWCOMC1","PvalueWCOMC2","PvalueWC1C2")
 total_b=read.csv("droso_blt_results.txt",stringsAsFactors=FALSE,header=F)
 names(total_b)=names_vb
@@ -352,13 +206,9 @@ names(b_wilcox)=c("i1_wilx","i2_wilx","pass_wilx","totalbl_pass")
 names(b_chisq)=c("i1_chi","i2_chi","pass_chi")
 names(m_overlap)=c("i1","i2","pass")
 
-
-
 total_b=cbind(total_b,b_chisq,b_wilcox)
 
-
-######################################Overlap Hypergeometric test##################################### 
-
+################################################################### Overlap Hypergeometric test #####################################3### 
 pair_name=apply(total_b[,c("i1_chi","i2_chi")],1,paste,collapse="_")
 total_b$pair_name=pair_name
 
@@ -402,7 +252,6 @@ for (cl in c("C1","C2","C3","C4","C5","C6","C7","C8","C9"))
     quartz.save(paste(cl,"_vennstringentoverlap_uniq.pdf",sep=""), type = "pdf",antialias=F,bg="white",dpi=400,pointsize=12)
     dev.off()
 }
-
 
 
 #Stringent unique introgression power test
@@ -504,7 +353,6 @@ for (cl in c("C1","C2","C3","C4","C5","C6","C7","C8","C9"))
 }
 
 
-
 #Relaxed unique introgression power test
 hyper_subsample_uniqrelaxed=function(tabl,size=8,cl)
 {
@@ -562,7 +410,6 @@ quartz.save("Power_uniqrelaxed.pdf", type = "pdf",antialias=F,bg="white",dpi=400
 dev.off()
 
 
-
 #Introgression all triplets
 for (cl in c("C1","C2","C3","C4","C5","C6","C7","C8","C9"))
 {    
@@ -607,7 +454,6 @@ hyper_subsample=function(tabl,size=8,cl)
     
 }    
 
-
 #Introgression power test all triplets
 quartz(width=3, height=27)
 par(mfrow=c(9,1))
@@ -647,9 +493,7 @@ print_save_matrix(sp_space,m_wilx,"_blt")
 #QuibL
 print_save_matrix(sp_space,total_q,"_quibl")
 
-#####################################Time-introgression plot#########################################
-
-
+#####################################Time-introgression plot######################################################
 phy_mcmc=readMCMCtree("schemeA.tre")
 phy=phy_mcmc$apePhy
 tree_h=nodeheight(phy, node=159)
@@ -687,9 +531,7 @@ for (cl in c("C1","C2","C3","C4","C5","C6","C7","C8","C9"))
     dev.off()
 }
 
-#####################################Number of introgression events#########################################
-
-
+#####################################Number of introgression events############################################
 for (cl in c("C1","C2","C3","C4","C5","C6","C7","C8","C9"))
 {   
     print(cl)

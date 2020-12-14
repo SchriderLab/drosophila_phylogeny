@@ -3,9 +3,6 @@ library("ape")
 library("phytools")
 library("PerformanceAnalytics")
 
-
-
-
 #main tree plot
 phy_mcmc=readMCMCtree("schemeA.tre")
 phy=phy_mcmc$apePhy
@@ -62,9 +59,6 @@ lines(log(n_ages[,5]),type="o",pch=16,col="orange")
 lines(log(n_ages[,1]),type="o",pch=16)
 legend("bottomright",legend=c("scheme A","scheme B","scheme C","scheme D","scheme Russo"),col=c("black","red","blue","purple","orange"),lty=1,pch=16)
 chart.Correlation(n_ages, histogram=F, pch="+",col="red")
-
-
-
 
 
 #time tree comparisons between different gene samplings 

@@ -86,7 +86,6 @@ getstats_triplets=function(taxa_list,gene_trees,clade_name)
 }    
 
 
-
 tt=read.tree(args[1])
 phy=read.table(args[2],stringsAsFactors = F)
 #Arg 3 = the node number
