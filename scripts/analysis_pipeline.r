@@ -169,23 +169,7 @@ total_q=total_q[complete.cases(total_q$pass),]
 total_q=total_q[total_q$common!="common",]
 #total_q=total_q[total_q$common!="discord1",]
 
-#################################################################### Dfoil ##############################################################
-
-
-
-names_v=c("clade","P1","P2","P3","P4","Out","chrom1","position", "AAAAA" , "AAABA" , "AABAA" , "AABBA" , "ABAAA" , "ABABA" , "ABBAA" , "ABBBA" , "BAAAA" , "BAABA" , "BABAA" , "BABBA" , "BBAAA" ,"BBABA","BBBAA","BBBBA",'chromdup','coord','total','dtotal','T12','T34','T1234','DFO_left','DFO_right','DFO_total','DFO_stat','DFO_chisq','DFO_Pvalue','DIL_left','DIL_right','DIL_total','DIL_stat','DIL_chisq','DIL_Pvalue','DFI_left','DFI_right','DFI_total','DFI_stat','DFI_chisq','DFI_Pvalue','DOL_left','DOL_right','DOL_total','DOL_stat','DOL_chisq','DOL_Pvalue','introgression','introgna','intrognone','introg13','introg14','introg23','introg24','introg31','introg41','introg32','introg42','introg123','introg124')
-
-total_d=read.csv("droso_dfoil_results.txt",stringsAsFactors=FALSE,header=F)
-names(total_d)=names_v
-total_d=total_d[total_d$T12<total_d$T34,]
-
-total_d$Genus="Drosophila"
-total_d$introgressionid=ifelse(total_d$introgression=="none","None",
-                             ifelse(total_d$introgression=="123" | total_d$introgression=="124","Ancestral","Inter-group"))
-         
-total_d=cbind(total_d,get_intropair_dfoil(total_d))        
-
-
+  
 
 #################################################################### Branch Length Test ################################################
 names_vb=c("clade","P1out","P2out","P3out","CountP1","CountP2","CountP3","PvalueChi","meanT_concord","meanT_discord1","meanT_discord2","PvalueWCOMC1","PvalueWCOMC2","PvalueWC1C2")
