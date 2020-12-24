@@ -85,8 +85,8 @@ Options:
 	-h, --help
 		Show this help message and exit
 ```    
-Example for clade 1:
+Example for clade 1 (use ```nodelabels()``` function in [ape](https://cran.r-project.org/web/packages/ape/index.html) package to obtain node number):
 ```bash
-Rscript blt_dct_test.r -t gene_trees_noboot_dna_mafft -s MLrooted.tre -n 307 -c 10 -p C1 -o Anopheles_gambiae
+Rscript blt_dct_test.r -t gene_trees_noboot_dna_mafft -s iqtree_rooted.tre -n 307 -c 10 -p C1 -o Anopheles_gambiae
 ```
 
