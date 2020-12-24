@@ -62,6 +62,28 @@ java -jar astral.5.6.3.jar -i [gene_trees] -t 3
 ```bash
 Rscript blt_dct_test.r -t [gene_trees] -s [species tree] -n [node number] -c [cores] -p [prefix] -o [outgroup species]
 ```
+```
+Options:
+	-t CHARACTER, --trees=CHARACTER
+		input gene trees in newick
 
+	-s CHARACTER, --species_tree=CHARACTER
+		rooted species tree in newick
+
+	-n NUMERIC, --node=NUMERIC
+		node number of a tested clade in a species tree
+
+	-c NUMERIC, --cores=NUMERIC
+		number of cores for parallel computing
+
+	-p CHARACTER, --prefix=CHARACTER
+		clade prefix
+
+	-o CHARACTER, --outgroup=CHARACTER
+		outgroup species (only one allowed)
+
+	-h, --help
+		Show this help message and exit
+```    
 
 
