@@ -1,97 +1,118 @@
-library("ape")
+#!/usr/bin/env Rscript
+library("optparse")
+library("doSNOW")
+
+#Arguments
+option_list = list(
+  make_option(c("-t", "--trees"), type="character", default=NULL,help="input gene trees in newick", metavar="character"),
+  make_option(c("-s", "--species_tree"), type="character", default=NULL, help="rooted species tree in newick", metavar="character"),
+  make_option(c("-n", "--node"), type="numeric", default=NULL, help="node number of a tested clade in a species tree", metavar="numeric"),
+  make_option(c("-c", "--cores"), type="numeric", default=NULL, help="number of cores for parallel computing", metavar="numeric"),
+  make_option(c("-p", "--prefix"), type="character", default=NULL, help="clade prefix", metavar="character"),
+  make_option(c("-o", "--outgroup"), type="character", default=NULL, help="outgroup species (only one allowed)", metavar="character")  
+)
+opt_parser = OptionParser(option_list=option_list)
+opt = parse_args(opt_parser)
+
+#Create cluster
+cl = makeCluster(opt$cores,type = "SOCK") 
+
 library("phangorn")
-library("svMisc")
+library("foreach")
+library("ape")
 
 args = commandArgs(trailingOnly=TRUE)
 
-test_triplet=function(taxa,gene_trees,clade_name)
+test_triplet=function(taxa,gene_trees,clade_name,outg)
 {
-    busco_len=gene_trees[,1:2]
-    gene_trees=read.tree(text=gene_trees[,"V3"]) 
+    gene_trees=gene_trees 
     trl_all=c()
     brls_all1=c()
     brls_all2=c()
     internal_all=c()
     out_all=c()
     root_tip_all=c()
-    busco_id_all=c()
-    aln_length_all=c()
-    ind=0
     for (tre in gene_trees)
     {
-        
-        ind=ind+1
-        if("M_domestica" %in% tre$tip.label & all(taxa %in% tre$tip.label))
+        if(outg %in% tre$tip.label & all(taxa %in% tre$tip.label))
         {
             
-            tre=root(tre,"M_domestica")
+            tre=root(tre,outg)
             trl=sum(tre$edge.length)
             tre_trip=keep.tip(tre,taxa)
             brls=extract.clade(tre_trip,max(tre_trip$edge))$edge.length
             root_tip=tre_trip$tip.label[!tre_trip$tip.label %in% extract.clade(tre_trip,max(tre_trip$edge))$tip.label]
             trl_all=c(trl_all,trl)
-            out_all=c(out_all,tre_trip$edge.length[1])
-            internal_all=c(internal_all,tre_trip$edge.length[2])
+            outl=tre_trip$edge.length[which(tre_trip$edge[,1]==4 & (tre_trip$edge[,2]==1 | tre_trip$edge[,2]==2 | tre_trip$edge[,2]==3))]
+            out_all=c(out_all,outl)
+            internall=tre_trip$edge.length[which(tre_trip$edge[,1]==4 & tre_trip$edge[,2]==5)]
+            internal_all=c(internal_all,internall)
             brls_all1=c(brls_all1,brls[1])
             brls_all2=c(brls_all2,brls[2])
             root_tip_all=c(root_tip_all,root_tip)
-            busco_id_all=c(busco_id_all,busco_len[ind,1])
-            aln_length_all=c(aln_length_all,busco_len[ind,2])
-            
-           
+                   
         }    
     }
+    #Get counts/ compute common and non-common
     counts=table(root_tip_all)
-    con=names(which.max(counts))
+    com=names(which.max(counts))
     dis=names(which.min(counts))
-    m=data.frame(brl1=brls_all1,brl2=brls_all2,trl=trl_all,brl_out=out_all,brl_int=internal_all,root_tip=root_tip_all,topo=ifelse(root_tip_all %in% con,"concord",ifelse(root_tip_all %in% dis,"discord2","discord1")))
-    write.table(m,paste(c(taxa,"csv"),collapse="."),quote=F,row.names=F)
+    m=data.frame(clade_name,P1=tre_trip$tip.label[1],P2=tre_trip$tip.label[2],P3=tre_trip$tip.label[3],brl1=brls_all1,brl2=brls_all2,trl=trl_all,brl_out=out_all,brl_int=internal_all,root_tip=root_tip_all,topo=ifelse(root_tip_all %in% com,"concord",ifelse(root_tip_all %in% dis,"discord1","discord2")))
+    #write.table(m,paste(c(taxa,"csv"),collapse="."),quote=F,row.names=F,col.names=F)
     if(!any(table(m$root_tip)==0) & length(table(m$root_tip))==3)
     {
-        counts=table(m$root_tip)
-        com=names(which.max(counts))
-        not_com=names(counts)[!names(counts) %in% com]
-        not_com_c=counts[!names(counts) %in% com]
-        m$common=ifelse(m$root_tip==com,"TRUE","FALSE")
+        #Normalize ditances by total gene tree lengths
         m$proxy_t=(m$brl1+m$brl2)/m$trl
-        ccom=m[m$common==TRUE,"proxy_t"]
-        c1=m[m$root_tip==not_com[1],"proxy_t"]
-        c2=m[m$root_tip==not_com[2],"proxy_t"]
+        ccom=m[m$topo=="concord","proxy_t"]
+        c1=m[m$topo=="discord1","proxy_t"]
+        c2=m[m$topo=="discord2","proxy_t"]
+        not_com_count=table(m[m$topo!="concord","topo"])
         w_testc1=wilcox.test(ccom,c1)$p.value
         w_testc2=wilcox.test(ccom,c2)$p.value
         w_test=wilcox.test(c1,c2)$p.value
-        chi=chisq.test(not_com_c)$p.value
+        chi=chisq.test(not_com_count)$p.value
         v_out=c(clade_name,names(counts),counts,chi,mean(ccom),mean(c1),mean(c2),w_testc1,w_testc2,w_test)
         return(as.vector(v_out))
     } 
-  
-
 }    
 
 
-getstats_triplets=function(taxa_list,gene_trees,clade_name)
+getstats_triplets=function(taxa_list,gene_trees,clade_name,outg)
 {
    
     taxa_combn=combn(taxa_list,m=3)
-    out_t=c()
-    for (i in 1:ncol(taxa_combn))
+    print(paste("N triplets:",ncol(taxa_combn)))
+    pb=txtProgressBar(0,ncol(taxa_combn),style=3)
+    progress=function(n){
+    setTxtProgressBar(pb,n)
+    }
+    opts=list(progress=progress)
+    out_t=foreach(i=1:ncol(taxa_combn),.combine='rbind',.options.snow=opts) %dopar% 
     {
-        progress(i,ncol(taxa_combn))
+       
         triplet=taxa_combn[,i]
-        stats=test_triplet(triplet,gene_trees,clade_name)
-        out_t=rbind(out_t,stats) 
+        stats=test_triplet(triplet,gene_trees,clade_name,outg)
+        return(stats)
+        
     }
     write.table(as.data.frame(out_t),clade_name,quote = F, row.names = F, col.names = F,sep=",")
     
 }    
 
+clusterExport(cl, c("read.tree","root","keep.tip","extract.clade","setTxtProgressBar","test_triplet","drop.tip"))
+registerDoSNOW(cl)
 
-tt=read.tree(args[1])
-phy=read.table(args[2],stringsAsFactors = F)
-#Arg 3 = the node number
-clade=extract.clade(tt,as.numeric(args[3]))$tip.label
-#Arg 4 = clade name
-getstats_triplets(clade,phy,args[4])
+tt=read.tree(opt$species_tree)
+cat("Read species topology. Done.\n")
+phy=read.tree(opt$trees)
+cat("Read gene trees. Done.\n")
+clade=extract.clade(tt,as.numeric(opt$node))$tip.label
+cat("Exatract clade. Done.\n")
+cat(paste(clade,collapse="\n"))
+cat("\nCalculating DCT/BLT.\n")
+getstats_triplets(clade,phy,opt$prefix,opt$outgroup)
+cat("\nDone.\n")
+stopCluster(cl)
 
 
 
