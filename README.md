@@ -58,9 +58,9 @@ iqtree -s [supermatrix.aln] -nt 15 -m GTR+I+G -pre ML -safe -bb 1000 -alrt 1000 
 java -jar astral.5.6.3.jar -i [gene_trees] -t 3
 ```
 # Drosophila Introgression Analysis 
-:red_circle: **DCT/BLT**  
+:red_circle: **DCT/BLT** using [blt_dct_test.r](https://github.com/SchriderLab/drosophila_phylogeny/blob/master/scripts/blt_dct_test.r) 
 ```bash
-Rscript blt.r -t [gene_trees] -s [species tree] -n [node number] -c [cores] -p [prefix] -o [outgroup species]
+Rscript blt_dct_test.r -t [gene_trees] -s [species tree] -n [node number] -c [cores] -p [prefix] -o [outgroup species]
 ```
 
 
