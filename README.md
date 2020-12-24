@@ -57,8 +57,11 @@ iqtree -s [supermatrix.aln] -nt 15 -m GTR+I+G -pre ML -safe -bb 1000 -alrt 1000 
 ```bash
 java -jar astral.5.6.3.jar -i [gene_trees] -t 3
 ```
-
-
+# Drosophila Introgression Analysis 
+:red_circle: **DCT/BLT**  
+```bash
+Rscript blt.r -t [gene_trees] -s [species tree] -n [node number] -c [cores] -p [prefix] -o [outgroup species]
+```
 
 
 
