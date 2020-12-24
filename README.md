@@ -87,6 +87,6 @@ Options:
 ```    
 Example for clade 1:
 ```bash
-Rscript  blt_dct_test.r -t gene_trees_noboot_dna_mafft -s MLrooted.tre -n 307 -c 10 -p C1 -o Anopheles_gambiae
+Rscript blt_dct_test.r -t gene_trees_noboot_dna_mafft -s MLrooted.tre -n 307 -c 10 -p C1 -o Anopheles_gambiae
 ```
 
