@@ -66,7 +66,7 @@ test_triplet=function(taxa,gene_trees,clade_name,outg)
         ccom=m[m$topo=="concord","proxy_t"]
         c1=m[m$topo=="discord1","proxy_t"]
         c2=m[m$topo=="discord2","proxy_t"]
-        not_com_count=table(m[m$topo!="concord","topo"])
+        not_com_count=table(as.vector(m[m$topo!="concord","topo"]))
         w_testc1=wilcox.test(ccom,c1)$p.value
         w_testc2=wilcox.test(ccom,c2)$p.value
         w_test=wilcox.test(c1,c2)$p.value
