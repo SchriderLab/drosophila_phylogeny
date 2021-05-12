@@ -7,6 +7,7 @@ library("gridExtra")
 library("svMisc")
 library("MCMCtreeR")
 library("phytools")
+options(repr.matrix.max.cols=100, repr.matrix.max.rows=100)
 
 #Identify introgressing taxa pair from QuiBL result
 get_intropair=function(m)
@@ -26,45 +27,47 @@ get_intropair=function(m)
 }
 
 
-#Identify introgressing taxa pair from BLT result 
-get_intropair_blt_wilcox=function(m)
+#Identify introgressing taxa pair from DCT/BLT result 
+
+get_intropair_dctblt=function(m)
 {
     pair_v=rbind()
     for (i in 1:nrow(m))
     {
-        
-        pair=as.character(m[i,c("P1out","P2out","P3out")][which(rank(m[i,c("CountP1","CountP2","CountP3")],ties.method = "random")!=2)])
-        if(m[i,"PvalueWC1C2"]<0.05)
-        {
-            
-            if(m[i,c("CountP1","CountP2","CountP3")][which(rank(m[i,c("CountP1","CountP2","CountP3")])!=3)][1] > m[i,c("CountP1","CountP2","CountP3")][which(rank(m[i,c("CountP1","CountP2","CountP3")])!=3)][2] & m[i,"meanT_discord1"] < m[i,"meanT_discord2"] | m[i,c("CountP1","CountP2","CountP3")][which(rank(m[i,c("CountP1","CountP2","CountP3")])!=3)][1] < m[i,c("CountP1","CountP2","CountP3")][which(rank(m[i,c("CountP1","CountP2","CountP3")])!=3)][2] & m[i,"meanT_discord1"] > m[i,"meanT_discord2"])
-            {
-               pair=c(pair,"TRUE","TRUE") 
-            }else{
-               pair=c(pair,"TRUE","FALSE")  
-            }
-            pair_v=rbind(pair_v,pair)
-        }else{
-            pair=c(pair,"FALSE","FALSE")
-            pair_v=rbind(pair_v,pair)
-        }    
+       pair_dct=as.character(m[i,c("P1out","P2out","P3out")][which(rank(m[i,c("CountP1","CountP2","CountP3")],ties.method = "random")!=2)])
+       if (m[i,"meanT_discord2"] < m[i,"meanT_discord1"])       
+       {
+           pair_blt=pair_dct
+           
+       }else{
+           
+           pair_blt=as.character(m[i,c("P1out","P2out","P3out")][which(rank(m[i,c("CountP1","CountP2","CountP3")],ties.method = "random")!=1)])
+       } 
+       pair_v=rbind(pair_v,c(sort(pair_dct),m[i,"PvalueChi"]<0.05,sort(pair_blt),m[i,"PvalueWC1C2"]<0.05,m[i,"PvalueChi"]<0.05 & m[i,"PvalueWC1C2"]<0.05,all(pair_dct %in% pair_blt))) 
     }
     pair_v=data.frame(pair_v)
-    names(pair_v)=c("i1","i2","pass","totalbl_pass")
-    rownames(pair_v) = c()
-    pair_v[,c("i1","i2")]=t(apply(pair_v[,c("i1","i2")],1,sort))
+    names(pair_v)=c("i1_dct","i2_dct","pass_dct","i1_blt","i2_blt","pass_blt","pass_dctblt","i1i2_overlap")
     return(pair_v)
 }
 
-#Identify introgressing taxa pair from DCT result 
-get_intropair_blt_chisq=function(m)
+
+
+
+
+#Identify introgressing taxa pair from HyDe result 
+get_intropair_hyde=function(m)
 {
     pair_v=rbind()
     for (i in 1:nrow(m))
     {
+        if(m[i,"Gamma"]>0.5)
+        {
+            pair=as.character(m[i,c("Hybrid","P2")]) 
+        }else{
+            pair=as.character(m[i,c("Hybrid","P1")]) 
+        }    
         
-        pair=as.character(m[i,c("P1out","P2out","P3out")][which(rank(m[i,c("CountP1","CountP2","CountP3")],ties.method = "random")!=2)])
-        if(m[i,"PvalueChi"]<0.05)
+        if(m[i,"Pvalue"]<0.05)
         {
             pair_v=rbind(pair_v,c(pair,"TRUE"))
         }else{
@@ -80,8 +83,9 @@ get_intropair_blt_chisq=function(m)
 
 
 
+
 # Plot matrix from BLT/Chisq/QuiBl results 
-get_intomatrix_blt=function(taxa,dat,sig)
+get_intromatrix_blt=function(taxa,dat,sig)
 {
     m=matrix(0, nrow=length(taxa),ncol=length(taxa)) 
     m=data.frame(m)
@@ -174,64 +178,82 @@ total_q=total_q[total_q$common!="common",]
 #################################################################### Branch Length Test ################################################
 names_vb=c("clade","P1out","P2out","P3out","CountP1","CountP2","CountP3","PvalueChi","meanT_concord","meanT_discord1","meanT_discord2","PvalueWCOMC1","PvalueWCOMC2","PvalueWC1C2")
 total_b=read.csv("droso_blt_results.txt",stringsAsFactors=FALSE,header=F)
+#total_b=read.csv("droso_blt_results_treeshrink.txt",stringsAsFactors=FALSE,header=F)
 names(total_b)=names_vb
 total_b$PvalueChi=p.adjust(total_b$PvalueChi,method="fdr")
 total_b$PvalueWCOMC1=p.adjust(total_b$PvalueWCOMC1,method="fdr") 
 total_b$PvalueWCOMC2=p.adjust(total_b$PvalueWCOMC2,method="fdr") 
 total_b$PvalueWC1C2=p.adjust(total_b$PvalueWC1C2,method="fdr") 
 
-b_wilcox=get_intropair_blt_wilcox(total_b)
-b_chisq=get_intropair_blt_chisq(total_b)
 
-m_ch=b_chisq
-m_wilx=b_wilcox
-m_overlap=cbind(b_chisq[,1:2],b_chisq$pass=="TRUE" & b_wilcox$pass=="TRUE")
-names(b_wilcox)=c("i1_wilx","i2_wilx","pass_wilx","totalbl_pass")
-names(b_chisq)=c("i1_chi","i2_chi","pass_chi")
-names(m_overlap)=c("i1","i2","pass")
+bltdct=get_intropair_dctblt(total_b)
+total_b=cbind(total_b,bltdct)
+#write.csv(total_b,"droso_blt_results_analyzed.txt",quote = F,row.names = F)
+bltdct_overlap=total_b[total_b$i1i2_overlap == TRUE,c("i1_dct","i2_dct","pass_dctblt")]
+names(bltdct_overlap)=c("i1","i2","pass")
 
-total_b=cbind(total_b,b_chisq,b_wilcox)
+blt_alone=total_b[,c("i1_blt","i2_blt","pass_blt")]
+names(blt_alone)=c("i1","i2","pass")
 
-################################################################### Overlap Hypergeometric test #####################################3### 
-pair_name=apply(total_b[,c("i1_chi","i2_chi")],1,paste,collapse="_")
+dct_alone=total_b[,c("i1_dct","i2_dct","pass_dct")]
+names(dct_alone)=c("i1","i2","pass")
+
+
+
+#################################################################### Hyde ################################################
+total_h=read.table("all_hyde.txt",stringsAsFactors=FALSE,header=T)
+total_h=total_h[total_h$Gamma <= 1 & total_h$Gamma >= 0,]
+total_h$Pvalue=p.adjust(total_h$Pvalue, method = "bonferroni")
+h=get_intropair_hyde(total_h)
+names(h)=c("i1","i2","pass")
+
+total_h=cbind(total_h,h)
+
+
+
+################################################################### Overlap Hypergeometric test ######################################## 
+pair_name=apply(total_b[,c("i1_dct","i2_dct")],1,paste,collapse="_")
 total_b$pair_name=pair_name
+total_b_i1i2=total_b
+
+
 
 #Stringent unique introgression (main figure)
 for (cl in c("C1","C2","C3","C4","C5","C6","C7","C8","C9"))
 {    
     overl=0
-    sig_chi=0
-    sig_wilx=0
+    sig_dct=0
+    sig_blt=0
     no_sig=0
-    a=total_b[total_b$clade==cl,]
+    a=total_b_i1i2[total_b_i1i2$clade==cl,]
     for (p in unique(a$pair_name))
     {
-        if (any(a$pair_name==p & a$pass_chi!="FALSE" & a$pass_wilx!="FALSE"))
+        if (any(a$pair_name==p & a$pass_dctblt=="TRUE" & a$i1i2_overlap=="TRUE"))
         {
-            overl=overl+1 
-        } else if (all(c(any(a$pair_name==p & a$pass_chi!="FALSE"),any(a$pair_name==p & a$pass_wilx!="FALSE")))) {
-            sig_chi=sig_chi+1
-            sig_wilx=sig_wilx+1
-        } else if (any(a$pair_name==p & a$pass_chi!="FALSE")) {
-            sig_chi=sig_chi+1
-        } else if (any(a$pair_name==p & a$pass_wilx!="FALSE")) {
-            sig_wilx=sig_wilx+1
+            overl=overl+1
+        } else if (all(c(any(a$pair_name==p & a$pass_dct!="FALSE"),any(a$pair_name==p & a$pass_blt!="FALSE")))) {
+            sig_dct=sig_dct+1
+            sig_blt=sig_blt+1
+        } else if (any(a$pair_name==p & a$pass_dct!="FALSE")) {
+            sig_dct=sig_dct+1
+        } else if (any(a$pair_name==p & a$pass_blt!="FALSE")) {
+            sig_blt=sig_blt+1
         } else {
             no_sig=no_sig+1  
         }    
     }
-    tot=sig_chi+sig_wilx+2*overl+no_sig
-    tot_wilx=sig_wilx+overl
-    tot_chi=sig_chi+overl
+    tot=sig_dct+sig_blt+overl+no_sig
+    tot_blt=sig_blt+overl
+    tot_dct=sig_dct+overl
     print(cl)
-    hp=phyper(overl, tot_wilx, tot - tot_wilx, tot_chi, lower.tail = FALSE)
-    print(c(tot_chi-overl,overl,tot_wilx-overl,no_sig))
+    hp=phyper(overl, tot_blt, tot - tot_blt, tot_dct, lower.tail = FALSE)
+    print(c(tot_dct-overl,overl,tot_blt-overl,no_sig))
     print(tot)
     quartz(width=4, height=3.2)
     plot(c(0.8,1.2),c(1,1),cex=15,xlim=c(0,2),main=paste("P = ",hp),xlab="",ylab="",axes=FALSE,frame.plot=TRUE)
     text(1,1,overl)
-    text(0.55,1,tot_chi-overl)
-    text(1.45,1,tot_wilx-overl)
+    text(0.55,1,tot_dct-overl)
+    text(1.45,1,tot_blt-overl)
     text(1.9,0.65,no_sig)
     quartz.save(paste(cl,"_vennstringentoverlap_uniq.pdf",sep=""), type = "pdf",antialias=F,bg="white",dpi=400,pointsize=12)
     dev.off()
@@ -247,31 +269,31 @@ hyper_subsample_uniq=function(tabl,size=8,cl)
     for(i in 1:10000)
     {
         overl=0
-        sig_chi=0
-        sig_wilx=0
+        sig_dct=0
+        sig_blt=0
         no_sig=0
         sps_sub=sample(sps,size=size)
         a=sub_tabl[sub_tabl$P1out %in% sps_sub & sub_tabl$P2out %in% sps_sub & sub_tabl$P3out %in% sps_sub,]
         for (p in unique(a$pair_name))
         {
-            if (any(a$pair_name==p & a$pass_chi!="FALSE" & a$pass_wilx!="FALSE"))
+            if (any(a$pair_name==p & a$pass_dctblt=="TRUE" & a$i1i2_overlap=="TRUE"))
             {
                 overl=overl+1 
-            } else if (all(c(any(a$pair_name==p & a$pass_chi!="FALSE"),any(a$pair_name==p & a$pass_wilx!="FALSE")))) {
-                sig_chi=sig_chi+1
-                sig_wilx=sig_wilx+1
-            } else if (any(a$pair_name==p & a$pass_chi!="FALSE")) {
-                sig_chi=sig_chi+1
-            } else if (any(a$pair_name==p & a$pass_wilx!="FALSE")) {
-                sig_wilx=sig_wilx+1
+            } else if (all(c(any(a$pair_name==p & a$pass_dct!="FALSE"),any(a$pair_name==p & a$pass_blt!="FALSE")))) {
+                sig_dct=sig_dct+1
+                sig_blt=sig_blt+1
+            } else if (any(a$pair_name==p & a$pass_dct!="FALSE")) {
+                sig_dct=sig_dct+1
+            } else if (any(a$pair_name==p & a$pass_blt!="FALSE")) {
+                sig_blt=sig_blt+1
             } else {
                 no_sig=no_sig+1  
             }    
         }
-        tot=sig_chi+sig_wilx+2*overl+no_sig
-        tot_wilx=sig_wilx+overl
-        tot_chi=sig_chi+overl
-        hp=phyper(overl, tot_wilx, tot - tot_wilx, tot_chi, lower.tail = FALSE)
+        tot=sig_dct+sig_blt+overl+no_sig
+        tot_blt=sig_blt+overl
+        tot_dct=sig_dct+overl
+        hp=phyper(overl, tot_blt, tot - tot_blt, tot_dct, lower.tail = FALSE)
         p_vals=c(p_vals,hp)
         
     }    
@@ -279,16 +301,18 @@ hyper_subsample_uniq=function(tabl,size=8,cl)
     
 }    
 
-quartz(width=3, height=27)
-par(mfrow=c(9,1))
+quartz(width=10, height=10)
+par(mfrow=c(3,3))
 i=1
 for (cl in c("C1","C2","C3","C4","C5","C6","C7","C8","C9"))
 { 
-    pval=hyper_subsample_uniq(total_b,8,cl)
+    pval=hyper_subsample_uniq(total_b_i1i2,8,cl)
     n=round(sum(pval< 0.05 & pval!=0)/sum(pval!=0),digits=3)
-    
+   
     hist(log(pval),col="grey",xlab="",ylab="Frequency",prob=TRUE,main=paste("Clade ",i," (",n,")"),nclass=20)
     abline(v=log(0.05),lty=3,col="red",lwd=2)
+      
+    
     i=i+1
 }
 
@@ -300,37 +324,37 @@ dev.off()
 for (cl in c("C1","C2","C3","C4","C5","C6","C7","C8","C9"))
 {    
     overl=0
-    sig_chi=0
-    sig_wilx=0
+    sig_dct=0
+    sig_blt=0
     no_sig=0
-    a=total_b[total_b$clade==cl,]
+    a=total_b_i1i2[total_b_i1i2$clade==cl,]
     for (p in unique(a$pair_name))
     {
-        if (any(a$pair_name==p & a$pass_chi!="FALSE" & a$pass_wilx!="FALSE"))
+        if (any(a$pair_name==p & a$pass_dctblt=="TRUE" & a$i1i2_overlap=="TRUE"))
         {
             overl=overl+1 
-        } else if (all(c(any(a$pair_name==p & a$pass_chi!="FALSE"),any(a$pair_name==p & a$pass_wilx!="FALSE")))) {
+        } else if (all(c(any(a$pair_name==p & a$pass_dct!="FALSE"),any(a$pair_name==p & a$pass_blt!="FALSE")))) {
             overl=overl+1
-        } else if (any(a$pair_name==p & a$pass_chi!="FALSE")) {
-            sig_chi=sig_chi+1
-        } else if (any(a$pair_name==p & a$pass_wilx!="FALSE")) {
-            sig_wilx=sig_wilx+1
+        } else if (any(a$pair_name==p & a$pass_dct!="FALSE")) {
+            sig_dct=sig_dct+1
+        } else if (any(a$pair_name==p & a$pass_blt!="FALSE")) {
+            sig_blt=sig_blt+1
         } else {
             no_sig=no_sig+1  
         }    
     }
-    tot=sig_chi+sig_wilx+2*overl+no_sig
-    tot_wilx=sig_wilx+overl
-    tot_chi=sig_chi+overl
+    tot=sig_dct+sig_blt+overl+no_sig
+    tot_blt=sig_blt+overl
+    tot_dct=sig_dct+overl
     print(cl)
-    hp=phyper(overl, tot_wilx, tot - tot_wilx, tot_chi, lower.tail = FALSE)
-    print(c(tot_chi-overl,overl,tot_wilx-overl,no_sig))
+    hp=phyper(overl, tot_blt, tot - tot_blt, tot_dct, lower.tail = FALSE)
+    print(c(tot_dct-overl,overl,tot_blt-overl,no_sig))
     print(tot)
     quartz(width=4, height=3.2)
     plot(c(0.8,1.2),c(1,1),cex=15,xlim=c(0,2),main=paste("P = ",hp),xlab="",ylab="",axes=FALSE,frame.plot=TRUE)
     text(1,1,overl)
-    text(0.55,1,tot_chi-overl)
-    text(1.45,1,tot_wilx-overl)
+    text(0.55,1,tot_dct-overl)
+    text(1.45,1,tot_blt-overl)
     text(1.9,0.65,no_sig)
     quartz.save(paste(cl,"_vennrelaxedoverlap_uniq.pdf",sep=""), type = "pdf",antialias=F,bg="white",dpi=400,pointsize=12)
     dev.off()
@@ -346,30 +370,30 @@ hyper_subsample_uniqrelaxed=function(tabl,size=8,cl)
     for(i in 1:10000)
     {
         overl=0
-        sig_chi=0
-        sig_wilx=0
+        sig_dct=0
+        sig_blt=0
         no_sig=0
         sps_sub=sample(sps,size=size)
         a=sub_tabl[sub_tabl$P1out %in% sps_sub & sub_tabl$P2out %in% sps_sub & sub_tabl$P3out %in% sps_sub,]
         for (p in unique(a$pair_name))
         {
-            if (any(a$pair_name==p & a$pass_chi!="FALSE" & a$pass_wilx!="FALSE"))
+            if (any(a$pair_name==p & a$pass_dctblt=="TRUE" & a$i1i2_overlap=="TRUE"))
             {
                 overl=overl+1 
-            } else if (all(c(any(a$pair_name==p & a$pass_chi!="FALSE"),any(a$pair_name==p & a$pass_wilx!="FALSE")))) {
+            } else if (all(c(any(a$pair_name==p & a$pass_dct!="FALSE"),any(a$pair_name==p & a$pass_blt!="FALSE")))) {
                 overl=overl+1
-            } else if (any(a$pair_name==p & a$pass_chi!="FALSE")) {
-                sig_chi=sig_chi+1
-            } else if (any(a$pair_name==p & a$pass_wilx!="FALSE")) {
-                sig_wilx=sig_wilx+1
+            } else if (any(a$pair_name==p & a$pass_dct!="FALSE")) {
+                sig_dct=sig_dct+1
+            } else if (any(a$pair_name==p & a$pass_blt!="FALSE")) {
+                sig_blt=sig_blt+1
             } else {
                 no_sig=no_sig+1  
             }    
         }
-        tot=sig_chi+sig_wilx+2*overl+no_sig
-        tot_wilx=sig_wilx+overl
-        tot_chi=sig_chi+overl
-        hp=phyper(overl, tot_wilx, tot - tot_wilx, tot_chi, lower.tail = FALSE)
+        tot=sig_dct+sig_blt+2*overl+no_sig
+        tot_blt=sig_blt+overl
+        tot_dct=sig_dct+overl
+        hp=phyper(overl, tot_blt, tot - tot_blt, tot_dct, lower.tail = FALSE)
         p_vals=c(p_vals,hp)
         
     }    
@@ -377,8 +401,8 @@ hyper_subsample_uniqrelaxed=function(tabl,size=8,cl)
     
 }    
 
-quartz(width=3, height=27)
-par(mfrow=c(9,1))
+quartz(width=10, height=10)
+par(mfrow=c(3,3))
 i=1
 for (cl in c("C1","C2","C3","C4","C5","C6","C7","C8","C9"))
 { 
@@ -397,21 +421,21 @@ dev.off()
 #Introgression all triplets
 for (cl in c("C1","C2","C3","C4","C5","C6","C7","C8","C9"))
 {    
-    a=total_b[total_b$clade==cl,]
+    a=total_b_i1i2[total_b_i1i2$clade==cl,]
     tot=nrow(a)
-    overl=sum(as.numeric(a$pass_chi!="FALSE" & a$pass_wilx!="FALSE"))
-    tot_chi=sum(as.numeric(a$pass_chi=="TRUE"))
-    tot_wilx=sum(as.numeric(a$pass_wilx=="TRUE"))
+    overl=sum(as.numeric(a$pass_dctblt=="TRUE" & a$i1i2_overlap=="TRUE"))
+    tot_dct=sum(as.numeric(a$pass_dct=="TRUE"))
+    tot_blt=sum(as.numeric(a$pass_blt=="TRUE"))
     print(cl)
-    hp=phyper(overl, tot_wilx, tot - tot_wilx, tot_chi, lower.tail = FALSE)
-    print(c(tot_chi-overl,overl,tot_wilx-overl,sum(as.numeric(a$pass_chi=="FALSE" & a$pass_wilx=="FALSE"))))
+    hp=phyper(overl, tot_blt, tot - tot_blt, tot_dct, lower.tail = FALSE)
+    print(c(tot_dct-overl,overl,tot_blt-overl,sum(as.numeric(a$pass_dct=="FALSE" & a$pass_blt=="FALSE"))))
     print(tot)
     quartz(width=4, height=3.2)
     plot(c(0.8,1.2),c(1,1),cex=15,xlim=c(0,2),main=paste("P = ",hp),xlab="",ylab="",axes=FALSE,frame.plot=TRUE)
     text(1,1,overl)
-    text(0.55,1,tot_chi-overl)
-    text(1.45,1,tot_wilx-overl)
-    text(1.9,0.65,sum(as.numeric(a$pass_chi=="FALSE" & a$pass_wilx=="FALSE")))
+    text(0.55,1,tot_dct-overl)
+    text(1.45,1,tot_blt-overl)
+    text(1.9,0.65,sum(as.numeric(a$pass_dct=="FALSE" & a$pass_blt=="FALSE")))
     quartz.save(paste(cl,"_venn_alltrips.pdf",sep=""), type = "pdf",antialias=F,bg="white",dpi=400,pointsize=12)
     dev.off()
 }
@@ -427,10 +451,10 @@ hyper_subsample=function(tabl,size=8,cl)
         sps_sub=sample(sps,size=size)
         a=sub_tabl[sub_tabl$P1out %in% sps_sub & sub_tabl$P2out %in% sps_sub & sub_tabl$P3out %in% sps_sub,]
         tot=nrow(a)
-        overl=sum(as.numeric(a$pass_chi!="FALSE" & a$pass_wilx!="FALSE"))
-        tot_chi=sum(as.numeric(a$pass_chi=="TRUE"))
-        tot_wilx=sum(as.numeric(a$pass_wilx=="TRUE"))
-        hyper_p=phyper(overl, tot_wilx, tot - tot_wilx, tot_chi, lower.tail = FALSE)
+        overl=sum(as.numeric(a$pass_dctblt=="TRUE" & a$i1i2_overlap=="TRUE"))
+        tot_dct=sum(as.numeric(a$pass_dct=="TRUE"))
+        tot_blt=sum(as.numeric(a$pass_blt=="TRUE"))
+        hyper_p=phyper(overl, tot_blt, tot - tot_blt, tot_dct, lower.tail = FALSE)
         p_vals=c(p_vals,hyper_p)
         
     }    
@@ -439,8 +463,8 @@ hyper_subsample=function(tabl,size=8,cl)
 }    
 
 #Introgression power test all triplets
-quartz(width=3, height=27)
-par(mfrow=c(9,1))
+quartz(width=10, height=10)
+par(mfrow=c(3,3))
 i=1
 for (cl in c("C1","C2","C3","C4","C5","C6","C7","C8","C9"))
 { 
@@ -468,14 +492,18 @@ print_save_matrix=function(clades,data,name)
     }    
 }    
 
-#Agreement between BLT and Chi-square
-print_save_matrix(sp_space,m_overlap,"_blt_chi")
-#Chi-square
-print_save_matrix(sp_space,m_ch,"_chi")
+#Agreement between BLT and DCT
+print_save_matrix(sp_space,bltdct_overlap,"_blt_chi")
+#DCT
+print_save_matrix(sp_space,dct_alone,"_chi")
 #BLT
-print_save_matrix(sp_space,m_wilx,"_blt")
+print_save_matrix(sp_space,blt_alone,"_blt")
 #QuibL
 print_save_matrix(sp_space,total_q,"_quibl")
+#HyDe
+print_save_matrix(sp_space,total_h,"_hyde")
+
+
 
 #####################################Time-introgression plot######################################################
 phy_mcmc=readMCMCtree("schemeA.tre")
@@ -536,6 +564,32 @@ for (cl_node in c(307,245,256,289,265,185,168,226,204))
     cl=cl+1
 }    
 
+#####################################HyDe loci introgression############################################
+h=read.table("hyde_loci_wintrogression.txt")
+names(h)=c("id","P1","P2","P3","Gamma","len")
+h$clade=ifelse(apply(apply(h[,c("P1","P2","P3")],2,"%in%",C1),1,all),"C1",
+        ifelse(apply(apply(h[,c("P1","P2","P3")],2,"%in%",C2),1,all),"C2",
+        ifelse(apply(apply(h[,c("P1","P2","P3")],2,"%in%",C3),1,all),"C3",
+        ifelse(apply(apply(h[,c("P1","P2","P3")],2,"%in%",C4),1,all),"C4",
+        ifelse(apply(apply(h[,c("P1","P2","P3")],2,"%in%",C5),1,all),"C5",
+        ifelse(apply(apply(h[,c("P1","P2","P3")],2,"%in%",C6),1,all),"C6",
+        ifelse(apply(apply(h[,c("P1","P2","P3")],2,"%in%",C7),1,all),"C7",
+        ifelse(apply(apply(h[,c("P1","P2","P3")],2,"%in%",C8),1,all),"C8",       
+        ifelse(apply(apply(h[,c("P1","P2","P3")],2,"%in%",C9),1,all),"C9","Noclade")))))))))
+h=h[h$clade!="Noclade",]
 
+m_occ=c()
+for (l in unique(h$id))
+{
+    v=c(0,0,0,0,0,0,0,0,0)
+    names(v)=c("C1","C2","C3","C4","C5","C6","C7","C8","C9")
+    occ=names(table(h[h$id==l,"clade"]))
+    v[occ]=1
+    m_occ=rbind(m_occ,c(id=l,v))
+    
+}
+m_occ=data.frame(m_occ)    
+heatmap.2(apply(m_occ[,2:10],2,as.numeric))
 
+zz=melt(m_occ,id=c("id"))    
 
