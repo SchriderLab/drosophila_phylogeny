@@ -176,7 +176,7 @@ total_q=total_q[total_q$common!="common",]
   
 
 #################################################################### Branch Length Test ################################################
-names_vb=c("clade","P1out","P2out","P3out","CountP1","CountP2","CountP3","PvalueChi","meanT_concord","meanT_discord1","meanT_discord2","PvalueWCOMC1","PvalueWCOMC2","PvalueWC1C2")
+names_vb=c("clade","P1out","P2out","P3out","CountP1","CountP2","CountP3","PvalueChi","meanT_concord","meanT_discord1","meanT_discord2","PvalueWCOMC1","PvalueWCOMC2","PvalueWC1C2","s1","s2","o","d3","t1","t2","t3")
 total_b=read.csv("droso_blt_results.txt",stringsAsFactors=FALSE,header=F)
 #total_b=read.csv("droso_blt_results_treeshrink.txt",stringsAsFactors=FALSE,header=F)
 names(total_b)=names_vb
@@ -485,7 +485,7 @@ print_save_matrix=function(clades,data,name)
     ids=1
     for (cl in clades)
     {
-       pair_m=get_intomatrix_blt(cl,data)
+       pair_m=get_intromatrix_blt(cl,data)
        print(pair_m)
        quartz.save(paste("C",ids,name,".pdf",sep=""), type = "pdf",antialias=F,bg="white",dpi=400,pointsize=12)
        ids=ids+1  
