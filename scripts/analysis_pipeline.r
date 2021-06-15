@@ -43,14 +43,12 @@ get_intropair_dctblt=function(m)
            
            pair_blt=as.character(m[i,c("P1out","P2out","P3out")][which(rank(m[i,c("CountP1","CountP2","CountP3")],ties.method = "random")!=1)])
        } 
-       pair_v=rbind(pair_v,c(sort(pair_dct),m[i,"PvalueChi"]<0.05,sort(pair_blt),m[i,"PvalueWC1C2"]<0.05,m[i,"PvalueChi"]<0.05 & m[i,"PvalueWC1C2"]<0.05,all(pair_dct %in% pair_blt))) 
+       pair_v=rbind(pair_v,c(sort(pair_dct),m[i,"PvalueChi"]<0.05,sort(pair_blt),m[i,"PvalueWC1C2"]<0.05,m[i,"PvalueChi"]<0.05 & m[i,"PvalueWC1C2"]<0.05,all(pair_dct %in% pair_blt),m[i,"PvalueWCOMC2"]<0.05 & m[i,"meanT_discord2"]<m[i,"meanT_concord"] | m[i,"PvalueWCOMC1"]<0.05 & m[i,"meanT_discord1"]<m[i,"meanT_concord"],(m[i,"PvalueWCOMC2"]<0.05 & m[i,"meanT_discord2"]<m[i,"meanT_concord"] | m[i,"PvalueWCOMC1"]<0.05 & m[i,"meanT_discord1"]<m[i,"meanT_concord"]) & m[i,"PvalueWC1C2"]<0.05,m[i,"PvalueWCOMC2"]<0.05 & m[i,"meanT_discord2"]<m[i,"meanT_concord"] & m[i,"PvalueChi"]<0.05 & m[i,"PvalueWC1C2"]<0.05)) 
     }
     pair_v=data.frame(pair_v)
-    names(pair_v)=c("i1_dct","i2_dct","pass_dct","i1_blt","i2_blt","pass_blt","pass_dctblt","i1i2_overlap")
+    names(pair_v)=c("i1_dct","i2_dct","pass_dct","i1_blt","i2_blt","pass_blt","pass_dctblt","i1i2_overlap","pass_concord","pass_bltconcord","pass_bltdctconcord")
     return(pair_v)
 }
-
-
 
 
 
@@ -97,12 +95,12 @@ get_intromatrix_blt=function(taxa,dat,sig)
     {
         a=dat_int[i,"i1"]
         b=dat_int[i,"i2"]
-        if (dat_int[i,"pass"]=="TRUE")
+        if (dat_int[i,"pass"]==TRUE)
         {    
             m[rownames(m)==a,colnames(m)==b]=m[rownames(m)==a,colnames(m)==b]+1
-            n[rownames(n)==a,colnames(n)==b]=m[rownames(n)==a,colnames(n)==b]+1
+            n[rownames(n)==a,colnames(n)==b]=n[rownames(n)==a,colnames(n)==b]+1
         }else{
-            n[rownames(n)==a,colnames(n)==b]=m[rownames(n)==a,colnames(n)==b]+1  
+            n[rownames(n)==a,colnames(n)==b]=n[rownames(n)==a,colnames(n)==b]+1  
         }   
         
     }    
@@ -161,7 +159,7 @@ i=0
 for (trip in unique(as.character(total_q$triplet)))
 {
     i=i+1
-    progress(i,length(unique(as.character(total_q$triplet))))
+    #progress(i,length(unique(as.character(total_q$triplet))))
     gcount=total_q[total_q$triplet==trip,"count"]+1
     pos=rank(gcount,ties.method ="random")
     cl=c("discord2","discord1","common")
@@ -176,7 +174,8 @@ total_q=total_q[total_q$common!="common",]
   
 
 #################################################################### Branch Length Test ################################################
-names_vb=c("clade","P1out","P2out","P3out","CountP1","CountP2","CountP3","PvalueChi","meanT_concord","meanT_discord1","meanT_discord2","PvalueWCOMC1","PvalueWCOMC2","PvalueWC1C2","s1","s2","o","d3","t1","t2","t3")
+names_vb=c("clade","P1out","P2out","P3out","CountP1","CountP2","CountP3","PvalueChi","meanT_concord","meanT_discord1","meanT_discord2","PvalueWCOMC1","PvalueWCOMC2","PvalueWC1C2")
+#           ,"s1","s2","o","d3","t1","t2","t3")
 total_b=read.csv("droso_blt_results.txt",stringsAsFactors=FALSE,header=F)
 #total_b=read.csv("droso_blt_results_treeshrink.txt",stringsAsFactors=FALSE,header=F)
 names(total_b)=names_vb
@@ -192,13 +191,22 @@ total_b=cbind(total_b,bltdct)
 bltdct_overlap=total_b[total_b$i1i2_overlap == TRUE,c("i1_dct","i2_dct","pass_dctblt")]
 names(bltdct_overlap)=c("i1","i2","pass")
 
+bltdct_common_overlap=total_b[total_b$i1i2_overlap == TRUE,c("i1_dct","i2_dct","pass_bltdctconcord")]
+names(bltdct_common_overlap)=c("i1","i2","pass")
+
 blt_alone=total_b[,c("i1_blt","i2_blt","pass_blt")]
 names(blt_alone)=c("i1","i2","pass")
+
+blt_stringent=total_b[,c("i1_blt","i2_blt","pass_bltconcord")]
+names(blt_stringent)=c("i1","i2","pass")
 
 dct_alone=total_b[,c("i1_dct","i2_dct","pass_dct")]
 names(dct_alone)=c("i1","i2","pass")
 
-
+uniq_blt=unique((apply(total_b[,c("i1_blt","i2_blt")],1,paste,collapse=""))[total_b$pass_blt==TRUE])
+parsed_dct=apply(total_b[,c("i1_dct","i2_dct")],1,paste,collapse="")
+bltdct_relaxed=total_b[parsed_dct %in% uniq_blt, c("i1_dct","i2_dct","pass_dct")]
+names(bltdct_relaxed)=c("i1","i2","pass")
 
 #################################################################### Hyde ################################################
 total_h=read.table("all_hyde.txt",stringsAsFactors=FALSE,header=T)
@@ -494,6 +502,10 @@ print_save_matrix=function(clades,data,name)
 
 #Agreement between BLT and DCT
 print_save_matrix(sp_space,bltdct_overlap,"_blt_chi")
+#Agreement between BLT and DCT and concordant
+print_save_matrix(bltdct_common_overlap,"_blt_chi_com")
+#Agreement between BLT and concordant
+print_save_matrix(blt_stringent,"_blt_com")
 #DCT
 print_save_matrix(sp_space,dct_alone,"_chi")
 #BLT
