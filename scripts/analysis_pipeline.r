@@ -208,6 +208,24 @@ parsed_dct=apply(total_b[,c("i1_dct","i2_dct")],1,paste,collapse="")
 bltdct_relaxed=total_b[parsed_dct %in% uniq_blt, c("i1_dct","i2_dct","pass_dct")]
 names(bltdct_relaxed)=c("i1","i2","pass")
 
+
+#Plot gamma from counts
+gammas=c()
+for (i in 1:nrow(total_b))
+{
+    count_c=total_b[i,c("CountP1","CountP2","CountP3")][which(rank(total_b[i,c("CountP1","CountP2","CountP3")],ties.method = "random")==3)]
+    count_d2=total_b[i,c("CountP1","CountP2","CountP3")][which(rank(total_b[i,c("CountP1","CountP2","CountP3")],ties.method = "random")==2)]
+    count_d1=total_b[i,c("CountP1","CountP2","CountP3")][which(rank(total_b[i,c("CountP1","CountP2","CountP3")],ties.method = "random")==1)]
+    gamma=(count_d2-count_d1)/(count_c+count_d1+count_d2)
+    gammas=c(gammas,gamma)
+}
+
+total_b$Gamma=unlist(gammas)
+total_b_g=total_b[total_b$pass_dctblt==TRUE & total_b$i1i2_overlap==TRUE,c("clade","Gamma")]
+ggplot(total_b_g, aes(Gamma))+geom_histogram(aes(y=..density..),color="black", fill="white")+ geom_density(alpha=.2, fill="#FF6666")+facet_wrap(~ clade,ncol=3) 
+ggsave("bltdctgamma.pdf")
+
+
 #################################################################### Hyde ################################################
 total_h=read.table("all_hyde.txt",stringsAsFactors=FALSE,header=T)
 total_h=total_h[total_h$Gamma <= 1 & total_h$Gamma >= 0,]
@@ -217,6 +235,9 @@ names(h)=c("i1","i2","pass")
 
 total_h=cbind(total_h,h)
 
+total_h_g=total_h[total_h$Pvalue<0.05,c("clade","Gamma")]
+ggplot(total_h_g, aes(Gamma))+geom_histogram(aes(y=..density..),color="black", fill="white")+ geom_density(alpha=.2, fill="#FF6666")+facet_wrap(~ clade,ncol=3) 
+ggsave("hydegamma.pdf")
 
 
 ################################################################### Overlap Hypergeometric test ######################################## 
