@@ -209,6 +209,17 @@ bltdct_relaxed=total_b[parsed_dct %in% uniq_blt, c("i1_dct","i2_dct","pass_dct")
 names(bltdct_relaxed)=c("i1","i2","pass")
 
 
+
+#Introgression with both species 
+total_b$both_sig_concord=total_b$PvalueWCOMC1 < 0.05 & total_b$PvalueWCOMC2 < 0.05 & total_b$meanT_concord > total_b$meanT_discord1 & total_b$meanT_concord > total_b$meanT_discord2
+data.frame(tapply(total_b$both_sig_concord,total_b$clade,mean))
+
+#Taxa Overlap between BCT/DCT per clade 
+tapply(as.logical(total_b$i1i2_overlap),total_b$clade,mean)
+
+#Taxa Overlap between BCT/DCT (both tests significant) per clade
+data.frame(tapply(as.logical(total_b[total_b$pass_dctblt==TRUE,"i1i2_overlap"]),total_b[total_b$pass_dctblt==TRUE,"clade"],mean))
+
 #Plot gamma from counts
 gammas=c()
 for (i in 1:nrow(total_b))
@@ -235,6 +246,7 @@ names(h)=c("i1","i2","pass")
 
 total_h=cbind(total_h,h)
 
+#Plot gamma from counts
 total_h_g=total_h[total_h$Pvalue<0.05,c("clade","Gamma")]
 ggplot(total_h_g, aes(Gamma))+geom_histogram(aes(y=..density..),color="black", fill="white")+ geom_density(alpha=.2, fill="#FF6666")+facet_wrap(~ clade,ncol=3) 
 ggsave("hydegamma.pdf")
