@@ -17,7 +17,7 @@ get_intropair=function(m)
     pair_v=rbind()
     for (i in 1:nrow(l))        
     {
-        pair_intro=as.character(sp_list[i,][l[i,]])
+        pair_intro=sort(as.character(sp_list[i,][l[i,]]))
         pair_v=rbind(pair_v,pair_intro)
     }
     pair_v=data.frame(pair_v)
@@ -114,7 +114,24 @@ get_intromatrix_blt=function(taxa,dat,sig)
     melted_m=melt(as.matrix(norm_m),na.rm = TRUE)
     g1=ggplot(melted_m, aes(Var2, Var1, fill = value))+geom_tile(color = "white")+scale_fill_gradientn(colors=viridis(100),space = "Lab",name="") +theme_minimal()+theme(axis.title.x=element_blank(),axis.text.x=element_blank(),axis.ticks.x=element_blank())+coord_fixed()+labs(x="",y="")
     return(g1)
+}  
+
+#Save table utility 
+tab_prep=function(tab_introg,file_name)
+{
+    tab_introg=tab_introg[,c("i1","i2","pass")]
+    tab_introg$i1i2=paste(tab_introg$i1,tab_introg$i2,sep="-")
+    tab_introg$i1=NULL
+    tab_introg$i2=NULL
+    tab_v1=t(table(tab_introg))
+    tab_v2=data.frame(taxa_pair=row.names(tab_v1),introg_triplets=tab_v1[,"TRUE"],total_triplets=tab_v1[,"FALSE"]+tab_v1[,"TRUE"])
+    tab_v2$fraction=tab_v2$introg_triplets/tab_v2$total_triplets
+    write.csv(tab_v2,file_name,quote = F,row.names = F)
+    
 }    
+    
+
+
 
 #################################################################### Define Clades #######################################################
 
@@ -547,6 +564,13 @@ print_save_matrix(sp_space,blt_alone,"_blt")
 print_save_matrix(sp_space,total_q,"_quibl")
 #HyDe
 print_save_matrix(sp_space,total_h,"_hyde")
+
+#Save tables
+tab_prep(bltdct_overlap,"bltdct_overlap.csv")
+tab_prep(blt_alone,"blt_alone.csv")
+tab_prep(dct_alone,"dct_alone.csv")
+tab_prep(total_h,"hyde.csv")
+tab_prep(total_q,"quibl.csv")
 
 
 

@@ -4,6 +4,8 @@ library("phytools")
 library("PerformanceAnalytics")
 library("dendextend")
 library("BioGeoBEARS")
+library("ggplot2")
+
 
 #main tree plot
 phy_mcmc=readMCMCtree("schemeA.tre")
@@ -148,9 +150,8 @@ get_age_distr2=function(tree,set_name)
 }    
 
 
-
-
-
+#Treannotator command
+#treeannotator -burnin 0 -heights mean -lowMem rep_1.trees output.tre
 beast_files=c("prior.trees.summary.tre",paste(paste("rep",1:10,sep="_"),".trees.summary.tre",sep=""))
 all_ages=c()
 for (f in beast_files)
@@ -205,7 +206,7 @@ ylab("Age")+
 geom_line(aes(color=setname))+
 scale_colour_manual(name="",values = c("black","red","blue"),labels = c("MCMCTREE schemeA 100 loci","MCMCTREE schemeA 10 loci","MCMCTREE schemeA 1000 loci"))+
 theme(legend.position="top", legend.box = "horizontal")
-
+ggsave("mtcarsee.pdf",width = 491, height = 266,units="mm")
 
 #Plot BEAST2 age distributions 
 
@@ -247,9 +248,6 @@ ml_tree=root.phylo(ml_tree,outgroup="Anopheles_gambiae",resolve.root = T)
 astral_tree=root.phylo(astral_tree,outgroup="Anopheles_gambiae",resolve.root = T)
 ml_tree_sub=drop.tip(ml_tree,c("D_vulcana","D_simulans","D_villosipedis","Anopheles_gambiae","L_varia"))
 astral_tree_sub=drop.tip(astral_tree,c("D_vulcana","D_simulans","D_villosipedis","Anopheles_gambiae","L_varia"))
-
-
-
 
 
 
