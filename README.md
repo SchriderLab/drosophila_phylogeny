@@ -89,4 +89,20 @@ Example for clade 1 (use ```nodelabels()``` function in [ape](https://cran.r-pro
 ```bash
 Rscript blt_dct_test.r -t gene_trees_noboot_dna_mafft -s iqtree_rooted.tre -n 307 -c 10 -p C1 -o Anopheles_gambiae
 ```
+Interpretaton of the output for a given triplet with taxa A,B,C  
+```clade```: clade ID   
+```P1out```: outgroup species 1 e.g. if P1out = A, then topology is (A,(B,C))   
+```P2out```: outgroup species 2 e.g. if P1out = B, then topology is (B,(A,C))  
+```P3out```: outgroup species 3 e.g. if P1out = C, then topology is (C,(A,B))  
+```CountP1```:  gene tree counts for triplet with the outgroup species A, i.e. (A,(B,C)) 
+```CountP2```:  gene tree counts for triplet with the outgroup species B, i.e. (B,(A,C)) 
+```CountP3```:  gene tree counts for triplet with the outgroup species C, i.e. (C,(A,B)) 
+```PvalueChi```: Chi-squre test P value form comparison of two discordant gene tree counts (e.g. CountP1 = 140, CountP2 = 23 and CountP3 = 1569 then , P value comes from the comparison of CountP1 and CountP2).  
+```meanT_concord```:
+```meanT_discord1```:
+```meanT_discord2```:
+```PvalueWCOMC1```:
+```PvalueWCOMC2```:
+```PvalueWC1C2```:
+
 
