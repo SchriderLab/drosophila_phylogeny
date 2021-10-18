@@ -97,12 +97,12 @@ Interpretaton of the output for a given triplet with taxa A,B,C
 ```CountP1```:  gene tree counts for triplet with the outgroup species A, i.e. (A,(B,C))  
 ```CountP2```:  gene tree counts for triplet with the outgroup species B, i.e. (B,(A,C))  
 ```CountP3```:  gene tree counts for triplet with the outgroup species C, i.e. (C,(A,B))   
-```PvalueChi```: Chi-squre test P value form comparison of two discordant gene tree counts (e.g. CountP1 = 140, CountP2 = 23 and CountP3 = 1569 then , P value comes from the comparison of CountP1 and CountP2)    
-```meanT_concord```:
-```meanT_discord1```:
-```meanT_discord2```:
-```PvalueWCOMC1```:
-```PvalueWCOMC2```:
-```PvalueWC1C2```:
+```PvalueChi```: Chi-square test P value form comparison of two discordant gene tree counts (e.g. if CountP1 = 140, CountP2 = 23 and CountP3 = 1569, then P value comes from the comparison of CountP1 and CountP2)    
+```meanT_concord```: mean value of the genetic distances between sister species obtined from all concordant gene trees (e.g. if CountP1 = 140, CountP2 = 23 and CountP3 = 1569, then meanT_concord comes from the gene trees with the P3out outgroup)    
+```meanT_discord1```: mean value of the genetic distances between sister species obtined from all discordant gene trees with the smallest count (e.g. if CountP1 = 140, CountP2 = 23 and CountP3 = 1569, then meanT_discord1 comes from the gene trees with the P2out outgroup)    
+```meanT_discord2```: mean value of the genetic distances between sister species obtined from all discordant gene trees with the intermediate count (e.g. if CountP1 = 140, CountP2 = 23 and CountP3 = 1569, then meanT_discord2 comes from the gene trees with the P1out outgroup)  
+```PvalueWCOMC1```: Mann–Whitney U test P value from comparison of meanT_concord and meanT_discord1  
+```PvalueWCOMC2```: Mann–Whitney U test P value from comparison of meanT_concord and meanT_discord2  
+```PvalueWC1C2```: Mann–Whitney U test P value from comparison of meanT_discord1 and meanT_discord2  
 
 
