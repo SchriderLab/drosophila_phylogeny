@@ -23,22 +23,6 @@ library("ape")
 
 args = commandArgs(trailingOnly=TRUE)
 
-d3_stat=function(taxa,species_tree,pw_distance,outg)
-{
-
-    tre_trip=keep.tip(species_tree,taxa)
-    root_tip=tre_trip$tip.label[!tre_trip$tip.label %in% extract.clade(tre_trip,max(tre_trip$edge))$tip.label]
-    ingr=sort(tre_trip$tip.label[tre_trip$tip.label!=root_tip])
-    dis1=pw_distance[row.names(pw_distance)==ingr[1],root_tip]
-    dis2=pw_distance[row.names(pw_distance)==ingr[2],root_tip]
-    d3=(dis1-dis2)/(dis1+dis2)
-    tre_trip$edge.length=NULL
-    v_out=c(ingr[1],ingr[2],root_tip,d3,write.tree(tre_trip))
-    return(as.vector(v_out))
-    
-}
-
-
 test_triplet=function(taxa,gene_trees,clade_name,outg)
 {
     gene_trees=gene_trees 
@@ -93,7 +77,7 @@ test_triplet=function(taxa,gene_trees,clade_name,outg)
 }    
 
 
-getstats_triplets=function(taxa_list,gene_trees,clade_name,outg,species_tree,pw_distance)
+getstats_triplets=function(taxa_list,gene_trees,clade_name,outg,species_tree)
 {
    
     taxa_combn=combn(taxa_list,m=3)
@@ -108,29 +92,26 @@ getstats_triplets=function(taxa_list,gene_trees,clade_name,outg,species_tree,pw_
        
         triplet=taxa_combn[,i]
         stats1=test_triplet(triplet,gene_trees,clade_name,outg)
-        stats2=d3_stat(triplet,species_tree,pw_distance,outg)
-        return(c(stats1,stats2))
+        return(stats1)
         
     }
     write.table(as.data.frame(out_t),clade_name,quote = F, row.names = F, col.names = F,sep=",")
     
 }    
 
-clusterExport(cl, c("read.tree","cophenetic.phylo","root","keep.tip","extract.clade","setTxtProgressBar","test_triplet","drop.tip","write.tree","d3_stat"))
+clusterExport(cl,c("read.tree","cophenetic.phylo","root","keep.tip","extract.clade","setTxtProgressBar","test_triplet","drop.tip","write.tree"))
 registerDoSNOW(cl)
 
 tt=read.tree(opt$species_tree)
 cat("Read species topology. Done.\n")
-pw=cophenetic.phylo(tt)
-cat("Calculate pairwise distances from species tree. Done.\n")
 phy=read.tree(opt$trees)
 cat("Read gene trees. Done.\n")
 clade=extract.clade(tt,as.numeric(opt$node))
 cat("Exatract clade. Done.\n")
 cat(paste(clade$tip.label,collapse="\n"))
 cat("\nCalculating DCT/BLT.\n")
-getstats_triplets(clade$tip.label,phy,opt$prefix,opt$outgroup,clade,pw)
-cat("\nDone.\n") 
+getstats_triplets(clade$tip.label,phy,opt$prefix,opt$outgroup,clade)
+cat("\nDone.\n")
 stopCluster(cl)
 
 
