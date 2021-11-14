@@ -130,7 +130,7 @@ cat("Exatract clade. Done.\n")
 cat(paste(clade$tip.label,collapse="\n"))
 cat("\nCalculating DCT/BLT.\n")
 getstats_triplets(clade$tip.label,phy,opt$prefix,opt$outgroup,clade,pw)
-cat("\nDone.\n")
+cat("\nDone.\n") 
 stopCluster(cl)
 
 
